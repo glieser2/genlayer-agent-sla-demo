@@ -1,0 +1,6 @@
+{
+  "findings": [
+    {"criterion_id": "C3", "status": "not_met", "evidence_ids": ["E1"], "reason": "The synthetic 360px measurement shows 52px overflow for the named revision."},
+    {"criterion_id": "C4", "status": "insufficient_evidence", "evidence_ids": ["E2"], "reason": "Only an excerpt is available. It lacks a test command, but this does not establish that the full README lacks one."}
+  ]
+}

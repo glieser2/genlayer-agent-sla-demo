@@ -1,0 +1,46 @@
+{
+  "execution": "official_sdk_direct_mode",
+  "llm": "canned_fixture",
+  "network_deployment": false,
+  "evidence_authenticity_verified": false,
+  "assessment": {
+    "case_id": "SYNTHETIC-WEBSITE-001",
+    "findings": [
+      {
+        "criterion_id": "C1",
+        "evidence_ids": [
+          "INPUT:timestamps"
+        ],
+        "reason": "Comparison of supplied Unix seconds only; provenance not verified.",
+        "status": "met"
+      },
+      {
+        "criterion_id": "C2",
+        "evidence_ids": [
+          "INPUT:report"
+        ],
+        "reason": "Supplied report counts and revision match only; tests not rerun on chain.",
+        "status": "not_met"
+      },
+      {
+        "criterion_id": "C3",
+        "evidence_ids": [
+          "E1"
+        ],
+        "reason": "The synthetic 360px measurement shows 52px overflow for the named revision.",
+        "status": "not_met"
+      },
+      {
+        "criterion_id": "C4",
+        "evidence_ids": [
+          "E2"
+        ],
+        "reason": "Only an excerpt is available. It lacks a test command, but this does not establish that the full README lacks one.",
+        "status": "insufficient_evidence"
+      }
+    ],
+    "rubric": "SLA-DEMO-v1",
+    "scope": "supplied_evidence_only_no_settlement"
+  },
+  "captured_validator_accepts_same_mock": true
+}

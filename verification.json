@@ -1,0 +1,21 @@
+{
+  "recorded_run_utc": "20261025T221504Z",
+  "environment": "3.13.5 (tags/v3.13.5:6cb20a2, Jun 11 2025, 16:15:46) [MSC v.1943 64 bit (AMD64)]",
+  "scope": "local_only_mocked_llm",
+  "checks": {
+    "policy-tests": {
+      "exit_code": 0
+    },
+    "direct-tests": {
+      "exit_code": 0
+    },
+    "ast-lint": {
+      "exit_code": 0
+    }
+  },
+  "policy_tests_passed": 23,
+  "sdk_direct_tests_passed": 6,
+  "ast_checks_passed": 3,
+  "source_run_summary_sha256": "67e4feb6f8568ba2ef0c7f2cac17b0b7f0d87da90758e62e731629e6ab2a9c13",
+  "note": "Summary of the original run; no new test run claimed. Absolute log paths omitted. Source/tests copied byte-for-byte."
+}

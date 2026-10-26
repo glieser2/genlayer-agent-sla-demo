@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "case_id": "SYNTHETIC-WEBSITE-001",
+  "due_at": 1792972800,
+  "submitted_at": 1792969200,
+  "delivery_commit": "1111111111111111111111111111111111111111",
+  "report": {"commit": "1111111111111111111111111111111111111111", "passed": 11, "total": 12},
+  "evidence": [
+    {"id": "E1", "criteria": ["C3"], "text": "SYNTHETIC fixture, not an actual browser test: revision 1111111111111111111111111111111111111111, CSS viewport 360: document scrollWidth=412, clientWidth=360; 768: scrollWidth=768, clientWidth=768; 1440: scrollWidth=1440, clientWidth=1440. These are invented example measurements for the adjudication demo."},
+    {"id": "E2", "criteria": ["C4"], "text": "SYNTHETIC fixture: README excerpt for revision 1111111111111111111111111111111111111111: install with npm ci; start with npm run dev. No test command is included in this excerpt. Full README is unavailable."}
+  ],
+  "dispute": {"client": "Synthetic party: mobile layout fails; documentation may be incomplete.", "agent": "Synthetic party: desktop looks correct; full docs are alleged but not supplied."}
+}

@@ -1,0 +1,7 @@
+{
+  "release": "v0.3.0-rc7",
+  "asset_url": "https://github.com/genlayerlabs/genvm/releases/download/v0.3.0-rc7/genvm-runners-all.tar.xz",
+  "bytes": 134842512,
+  "sha256": "e218a1854214681560351051f76fe2b878545cf3409455ef372d57014a88ca67",
+  "verification": "official HTTPS source and size; hash recorded locally, not independently authenticated"
+}

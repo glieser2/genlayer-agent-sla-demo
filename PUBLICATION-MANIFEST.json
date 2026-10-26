@@ -1,0 +1,80 @@
+{
+  "status": "local_review_package_not_published",
+  "files": [
+    {
+      "path": ".gitignore",
+      "bytes": 97,
+      "sha256": "afffc6073aacf171111d8d70f74baaeb387f8336f8cf5fbd945e4696f5d75ec6"
+    },
+    {
+      "path": "README.md",
+      "bytes": 3812,
+      "sha256": "38f3038b2567a54bc06843eba1fd1053e685697af7eea329233583f0256609d7"
+    },
+    {
+      "path": "contracts/agent_sla.py",
+      "bytes": 8726,
+      "sha256": "9bab25a9f898d20ec6af13f0e34aa19d395998f973a592d379726e48304dd912"
+    },
+    {
+      "path": "demo-result.json",
+      "bytes": 1365,
+      "sha256": "a0b34b32538e0bc45c3c68ada27b8a85403e7b12a443762b3fc37d6fd67fa312"
+    },
+    {
+      "path": "demo.py",
+      "bytes": 1171,
+      "sha256": "15ef456491703e4960b563076bea712272ebdaf5221c003df6ec7d7da163c28a"
+    },
+    {
+      "path": "fixtures/case.json",
+      "bytes": 1101,
+      "sha256": "2541ecca9a38626ae43648cc49f353306577a5d6aa3140c8a559211f7a4b7dbb"
+    },
+    {
+      "path": "fixtures/model-response.json",
+      "bytes": 400,
+      "sha256": "647aed7886b88f4b2b9b9be77ca8aa2b9cef5f801329182376dd974bce4ca8d2"
+    },
+    {
+      "path": "prepare_sdk.py",
+      "bytes": 2203,
+      "sha256": "30c9e5375ef594c5e2a52a368ac3865fec5eeef9f095fc479bb672205192dc91"
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 43,
+      "sha256": "9a408e892ed2a0c66a6a4a57d6bce527429a65a04e5d36b1fae6ff371f4a1466"
+    },
+    {
+      "path": "run_checks.py",
+      "bytes": 1729,
+      "sha256": "1690b73c1fb8e1e734b0d3727953cce4017524938304824270d61c8ad7523be4"
+    },
+    {
+      "path": "sdk-artifact.json",
+      "bytes": 355,
+      "sha256": "f79604d1960f8b11e50b39f31b1dd56dd29abf343f7efcec1a34be97aa39e12e"
+    },
+    {
+      "path": "tests/test_direct.py",
+      "bytes": 2783,
+      "sha256": "d64738be2dfe688e32dc2e34f6e3ca71dd0bb66207585682bdf99d410cee4a36"
+    },
+    {
+      "path": "tests/test_policy.py",
+      "bytes": 4710,
+      "sha256": "eb92cbfe034c82237f3ca6ef5de31decb02ae21caf5b1797226d5fb6e8d87cc2"
+    },
+    {
+      "path": "verification.json",
+      "bytes": 683,
+      "sha256": "4d7c7d0ee1a79d06152381e2ed5e848c1429b85239405c29d9b28cdc2167ddda"
+    },
+    {
+      "path": "windows_compat.py",
+      "bytes": 1465,
+      "sha256": "c1434a2dc080204ccf6faef0c12881249014751df164507a21aafe95f34ea545"
+    }
+  ]
+}
