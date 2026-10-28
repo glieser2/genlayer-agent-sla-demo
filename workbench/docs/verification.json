@@ -1,0 +1,31 @@
+{
+  "date_beijing": "2026-10-28",
+  "app_version": "0.1.3",
+  "local_build": "passed: TypeScript checking and Vite production build",
+  "domain_tests": {"passed": 18, "failed": 0},
+  "browser_ui_checks": {"passed": 11, "desktop_width": 1440, "mobile_width": 390, "uncaught_errors": 0, "live_rpc_calls": 0},
+  "wallet_flow_checks": {"passed": 12, "provider": "fake EIP-1193 provider", "rpc": "intercepted in browser; nonzero dispatcher only a fixture", "simulated_signing_requests": 1, "real_wallet_requests": 0},
+  "live_browser_read_only_preflight": {"passed": true, "result": "Zero dispatcher correctly blocks browser-wallet preparation; no usable deployment review is produced", "network": "actual public Studio RPC", "provider": "fake account provider", "real_wallet_requests": 0, "transactions_sent": 0, "request_failures": 0},
+  "network_check": "See network-check.json: read-only chain ID and source schema verification, SDK 1.1.8 / Studionet 61999",
+  "contract_sha256": "9bab25a9f898d20ec6af13f0e34aa19d395998f973a592d379726e48304dd912",
+  "contract_matches_previous_reviewed_public_source": true,
+  "transactions_sent_by_verification_scripts": 0,
+  "user_submitted_transactions_observed": 3,
+  "historical_failed_attempt_outcome": "Original MetaMask attempt was FINALIZED type 0, value 0; not a contract deployment",
+  "actual_contract_deployments_confirmed": 1,
+  "successful_deployment": {"contract": "0x12de9d0F0CEFC3697e76656A3b520c302e17faE9", "transaction": "0x6cd7a290558ab19549cbebd5d794c85e59cf72309d196ebd76cca8adf679280b", "status": "FINALIZED", "execution": "FINISHED_WITH_RETURN", "type": 1, "source_matches_reviewed": true, "snapshot_matches_reviewed": true, "performed_by": "user manually in official Studio with explicitly authorized built-in test account", "evidence": "contract-0x12de9d0f0cefc3697e76656a3b520c302e17fae9.json"},
+  "assessments_confirmed": 1,
+  "successful_assessment": {"transaction": "0x4af53904b20f6581db81e7669c44f67a974e35595d3064b4e089dd9cb2b05106", "status": "FINALIZED", "execution": "FINISHED_WITH_RETURN", "type": 2, "value": 0, "findings": {"C1": "met", "C2": "not_met", "C3": "not_met", "C4": "not_met"}, "evidence": "transaction-0x4af53904b20f6581db81e7669c44f67a974e35595d3064b4e089dd9cb2b05106.json"},
+  "live_frontend_contract_read": {"passed": true, "source_checked": true, "findings_rendered": 4, "wallet_connected": false, "transactions_sent": 0, "screenshot": "preview-live-result.png", "test": "tests/live-contract-read.mjs"},
+  "paid_model_calls": 0,
+  "new_app_publication": false,
+  "projects_submitted": false,
+  "projects_accepted": false,
+  "milestone_implemented": false,
+  "notes": [
+    "The historical contract tests (23 policy / 6 SDK direct / 3 AST) are separate; no new run of those tests is claimed.",
+    "Schema success is not deployment, live consensus, or real-model accuracy evidence.",
+    "The SDK bundle has a Vite chunk-size advisory (about 550 kB uncompressed); the build succeeds.",
+    "Studio-dev / SDK RC probes failed schema parsing and are not used in the final application."
+  ]
+}

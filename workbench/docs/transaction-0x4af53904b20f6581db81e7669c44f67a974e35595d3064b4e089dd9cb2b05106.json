@@ -1,0 +1,60 @@
+{
+  "observedAt": "2026-10-28T15:01:23.938Z",
+  "chainId": 61999,
+  "transactionId": "0x4af53904b20f6581db81e7669c44f67a974e35595d3064b4e089dd9cb2b05106",
+  "readOnly": true,
+  "transactionsSentByInspector": 0,
+  "status": "FINALIZED",
+  "execution": "FINISHED_WITH_RETURN",
+  "outcome": "success",
+  "sender": "0x5Ed5FB35d6ADD43F6680BB891410Ea8E8Eb348c6",
+  "transactionType": 2,
+  "value": 0,
+  "contract": "0x12de9d0F0CEFC3697e76656A3b520c302e17faE9",
+  "sourceSha256": "9bab25a9f898d20ec6af13f0e34aa19d395998f973a592d379726e48304dd912",
+  "sourceMatchesReviewed": true,
+  "caseId": "SYNTHETIC-WEBSITE-001",
+  "snapshotSha256": "5e7433a01618bfbc7ab213c1b9bc5ac12eb186e20d1fd957ddd92e83ebe3624a",
+  "snapshotMatchesReviewedSyntheticCase": true,
+  "assessmentPerformed": true,
+  "assessment": {
+    "case_id": "SYNTHETIC-WEBSITE-001",
+    "findings": [
+      {
+        "criterion_id": "C1",
+        "evidence_ids": [
+          "INPUT:timestamps"
+        ],
+        "reason": "Comparison of supplied Unix seconds only; provenance not verified.",
+        "status": "met"
+      },
+      {
+        "criterion_id": "C2",
+        "evidence_ids": [
+          "INPUT:report"
+        ],
+        "reason": "Supplied report counts and revision match only; tests not rerun on chain.",
+        "status": "not_met"
+      },
+      {
+        "criterion_id": "C3",
+        "evidence_ids": [
+          "E1"
+        ],
+        "reason": "E1 reports document scrollWidth=412 vs clientWidth=360 at 360 CSS pixels for revision 1111...1111, indicating horizontal overflow at 360px (768 and 1440 show no overflow). Although the fixture is labeled synthetic, the supplied evidence itself demonstrates overflow at 360px, so C3 is not met rather than insufficient_evidence.",
+        "status": "not_met"
+      },
+      {
+        "criterion_id": "C4",
+        "evidence_ids": [
+          "E2"
+        ],
+        "reason": "E2 provides install (npm ci) and run (npm run dev) commands for the delivered revision but explicitly lacks a test command, and the full README is unavailable. C4 requires install, run, and test commands, so the requirement is not satisfied.",
+        "status": "not_met"
+      }
+    ],
+    "rubric": "SLA-DEMO-v1",
+    "scope": "supplied_evidence_only_no_settlement"
+  },
+  "explorer": "https://explorer-studio.genlayer.com/address/0x12de9d0F0CEFC3697e76656A3b520c302e17faE9"
+}

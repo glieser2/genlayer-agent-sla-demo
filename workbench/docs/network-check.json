@@ -1,0 +1,21 @@
+{
+  "observedAt": "2026-10-28T13:57:09.254Z",
+  "sdk": "1.1.8",
+  "network": "Genlayer Studio Network",
+  "expectedChainId": 61999,
+  "rpc": "https://studio.genlayer.com/api",
+  "readOnly": true,
+  "walletConnected": false,
+  "transactionsSent": 0,
+  "actualChainId": 61999,
+  "sdkConsensusTarget": "0xb7278A61aa25c888815aFC32Ad3cC52fF24fE575",
+  "runtimeConsensusTarget": "0x0000000000000000000000000000000000000000",
+  "staticSdkTargetMatchesRuntime": false,
+  "writerUsesRuntimeTarget": true,
+  "schemaMethods": [
+    "assess",
+    "get_result",
+    "get_snapshot"
+  ],
+  "schemaCompatible": true
+}

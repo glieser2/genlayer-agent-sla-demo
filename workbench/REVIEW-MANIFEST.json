@@ -1,0 +1,186 @@
+{
+  "review_date_beijing": "2026-10-28",
+  "app_version": "0.1.3",
+  "publication_authorized_for_new_app_files": false,
+  "original_deployment_and_assess_authorized": true,
+  "additional_deployment_retry_authorization_pending": false,
+  "transactions_sent_by_packaging": 0,
+  "files": [
+    {
+      "path": ".gitignore",
+      "bytes": 51,
+      "sha256": "9f077f0df88232c94031d4f36338280b3496957e751b2504e69674e440fd9d14"
+    },
+    {
+      "path": "README.md",
+      "bytes": 8789,
+      "sha256": "d3ff8444a447dd2ecc82683dc3a6e0047a1a07258221845e7bea4a12182cddfb"
+    },
+    {
+      "path": "docs/DEPLOYMENT.md",
+      "bytes": 5744,
+      "sha256": "e9bbf9174623fe11c4a32606b4b0530ee2384763ddd445571c6fb518c4cce85c"
+    },
+    {
+      "path": "docs/MILESTONES.md",
+      "bytes": 1660,
+      "sha256": "5ac99fee5a929e30903068ef05a77f67625407228eeac369f288e951d27323f8"
+    },
+    {
+      "path": "docs/PROJECTS.md",
+      "bytes": 3942,
+      "sha256": "6009eacb10d6c9dc3446b6a5eac1052687cde915c8031b3aaf1a795f0c615414"
+    },
+    {
+      "path": "docs/contract-0x12de9d0f0cefc3697e76656a3b520c302e17fae9.json",
+      "bytes": 2832,
+      "sha256": "487031c384a24932444c59348da5f7f545750bfa51688c5404b8d359542b83dd"
+    },
+    {
+      "path": "docs/network-check.json",
+      "bytes": 602,
+      "sha256": "6c72af9108a379984fd45b90c5dd824fa947b06aaa13340d409010bbaf0fb968"
+    },
+    {
+      "path": "docs/preview-desktop.png",
+      "bytes": 212245,
+      "sha256": "af179c53f6a5b838ab1624e0b8d677166fffa074812656f68ad1c07d6ae80b4b"
+    },
+    {
+      "path": "docs/preview-live-result.png",
+      "bytes": 67731,
+      "sha256": "81c07bf1ea67ecf3065b61bf3a90efb5dce39ad6e749c17e0703f4619e44647e"
+    },
+    {
+      "path": "docs/preview-mobile.png",
+      "bytes": 173011,
+      "sha256": "8990c14e1fb2e860ca1083b1312ad60518e87b46aeb8d35350cbb6d6280b0ab2"
+    },
+    {
+      "path": "docs/studio-constructor-snapshot.txt",
+      "bytes": 1101,
+      "sha256": "2541ecca9a38626ae43648cc49f353306577a5d6aa3140c8a559211f7a4b7dbb"
+    },
+    {
+      "path": "docs/transaction-0x4af53904b20f6581db81e7669c44f67a974e35595d3064b4e089dd9cb2b05106.json",
+      "bytes": 2375,
+      "sha256": "2f7a8145de360deea540e138b3a07cffb8db4d333c16158a9f4a98652a0fb762"
+    },
+    {
+      "path": "docs/verification.json",
+      "bytes": 3077,
+      "sha256": "390c72bf37c97ffd996bccd466e70a5b486b1dfd18c600382e47db086943f722"
+    },
+    {
+      "path": "index.html",
+      "bytes": 323,
+      "sha256": "e74b307e819c096493c9afb8d045bd89c3fce85559fd4fae004c1314ba47a1b4"
+    },
+    {
+      "path": "inspect-contract.mjs",
+      "bytes": 4111,
+      "sha256": "c34ec15fae79be551889a54efbac9c62237fac6357e904ee9b542603c3475c37"
+    },
+    {
+      "path": "inspect-network.mjs",
+      "bytes": 1912,
+      "sha256": "f09c085fe53ea9d42adc9d4c2d259f94b38c387c4482ca9f6131fb3f12ccfde0"
+    },
+    {
+      "path": "inspect-transaction.mjs",
+      "bytes": 3155,
+      "sha256": "0ef8812219acd540d9a9553ff4e440a6a84d92137b4f1fac033bcdcf04a1483a"
+    },
+    {
+      "path": "package.json",
+      "bytes": 414,
+      "sha256": "66f4c398eb50ed8a2e9634dd4bd17df9af6ece810817fd89e3ff78139f8a1d79"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "bytes": 86198,
+      "sha256": "f559563aa1c3842c2a435f07086674daa479c50378651f324744ed8f2f3112f3"
+    },
+    {
+      "path": "public/contracts/agent_sla.py",
+      "bytes": 8726,
+      "sha256": "9bab25a9f898d20ec6af13f0e34aa19d395998f973a592d379726e48304dd912"
+    },
+    {
+      "path": "public/fixtures/case.json",
+      "bytes": 1101,
+      "sha256": "2541ecca9a38626ae43648cc49f353306577a5d6aa3140c8a559211f7a4b7dbb"
+    },
+    {
+      "path": "public/fixtures/demo-result.json",
+      "bytes": 1365,
+      "sha256": "a0b34b32538e0bc45c3c68ada27b8a85403e7b12a443762b3fc37d6fd67fa312"
+    },
+    {
+      "path": "src/action-feedback.css",
+      "bytes": 242,
+      "sha256": "33cf36fe4620731913061aeaa9d572840c1a3b04da625afdf6d41575aad8ed91"
+    },
+    {
+      "path": "src/domain.ts",
+      "bytes": 6843,
+      "sha256": "80303d7747e31ccfc6903f027dff784e4bc319461fe73be85ddffa4d0c29ff59"
+    },
+    {
+      "path": "src/main.ts",
+      "bytes": 25091,
+      "sha256": "c08e3c5f5b3e8864ebe9b97ab03717ec0b2528a389b6047b3ebafb1da1deb588"
+    },
+    {
+      "path": "src/network.ts",
+      "bytes": 1914,
+      "sha256": "9e90b1a82908ca2ba560266c4a8f934d44b9b7be0fb3d65187325a06dda9d02d"
+    },
+    {
+      "path": "src/studio.ts",
+      "bytes": 2789,
+      "sha256": "87afefb3876c4f14acb5f370cd6ed06b2aa73188ddaa62930fc9e026fbd0bdb3"
+    },
+    {
+      "path": "src/style.css",
+      "bytes": 7745,
+      "sha256": "27817940538338f2f81a94a916bc86efb735afcdc8892347a7a35cdb83930f2b"
+    },
+    {
+      "path": "tests/domain.test.mjs",
+      "bytes": 4981,
+      "sha256": "034936b33c5f42fc243103d6c0b51e02d26ad4d20edf026cebc4b86825d4c49c"
+    },
+    {
+      "path": "tests/live-contract-read.mjs",
+      "bytes": 2213,
+      "sha256": "6860238be6f21489436ce83915c89d21034f55e867689ee069c95e085a54be6a"
+    },
+    {
+      "path": "tests/live-preflight.mjs",
+      "bytes": 2600,
+      "sha256": "67523c490ed058fe126ff87e0841c308eba937dae8bf25fad7c9b7d1f72df5cb"
+    },
+    {
+      "path": "tests/studio.test.mjs",
+      "bytes": 2396,
+      "sha256": "352f6431d9cd4ecaf97959ae9ef5575a3b2e76a19d5a552311d64d6a8b7e19c2"
+    },
+    {
+      "path": "tests/ui-smoke.mjs",
+      "bytes": 3493,
+      "sha256": "dbced34983557efeb04f7dc4972ccc047e5fa98207f57d1bc2a33280d39a5045"
+    },
+    {
+      "path": "tests/wallet-flow.mjs",
+      "bytes": 9289,
+      "sha256": "23c333f8d1162ddb0db419665a772b90d3e8e9510c47725d3857504a31059bad"
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 317,
+      "sha256": "de3a87ded3d2eabe4423aa0657b3d5d10fd97a4fb9f8ff0d6705196f75a30ac2"
+    }
+  ],
+  "note": "Manifest excludes its own hash. Local review archive, not proof of public publication, deployment, Portal acceptance or reward."
+}
