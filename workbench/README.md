@@ -1,5 +1,7 @@
 # Agent SLA Workbench
 
+**0.1.4发布准备**：源码v0.1.3的36文件已公开并逐项核对，提交8f261a5947f3ffc98033d0efc93777d59a67817e。此版本补充GitHub Pages仓库子路径支持，源码、样例和首页链接均遵循Vite BASE_URL；`pnpm run build:pages`生成`/genlayer-agent-sla-demo/`路径的静态站。公开站点仍未启用；拟访问地址为https://glieser2.github.io/genlayer-agent-sla-demo/，不是已上线证明。新增发布工作流仅由用户手动触发，不自动执行链上操作，不读取钱包密钥，不使用个人API密钥。公开网站启用及此批改动另行确认，旧版链上合约不变。
+
 **评估实测更新（2026-10-28，以本段为准）**：同一官方Studio内置测试账户完成一次assess，交易`0x4af53904b20f6581db81e7669c44f67a974e35595d3064b4e089dd9cb2b05106`为type2、FINALIZED且执行成功。真实网络结果是C1满足，C2/C3/C4未满足；输入为明确标注的合成案例，这些负面结论不是交易失败。本地前端无需钱包即可核对源码并读取实际结果；在“链上评估”点击“读取链上合成案例”，或填写下方真实合约地址。`tests/live-contract-read.mjs`已通过真实只读RPC核对UI呈现。原定单次部署和单次assess已完成，勿重复。尚无新应用公开发布或Portal接受证据。
 
 **部署实测更新（2026-10-28）**：用户经明确同意后，使用官方Studio内置测试账户部署一份原合约。只读RPC核实部署交易`0x6cd7a290558ab19549cbebd5d794c85e59cf72309d196ebd76cca8adf679280b`为type1、FINALIZED且执行成功，合约`0x12de9d0F0CEFC3697e76656A3b520c302e17faE9`源码与已审核版本完全相同，冻结案例语义一致。assess尚未执行。该事实不代表原MetaMask路径已兼容、Portal已接受或新前端已公开。详细精简记录见docs/contract-0x12de9d0f0cefc3697e76656a3b520c302e17fae9.json；下方更新段落中的“尚未部署”为各历史阶段状态。

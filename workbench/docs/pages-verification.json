@@ -1,0 +1,23 @@
+{
+  "observedAt": "2026-10-28T15:28:33.354Z",
+  "version": "0.1.4",
+  "localProductionPreview": true,
+  "published": false,
+  "basePath": "/genlayer-agent-sla-demo/",
+  "checks": [
+    "production assets load at repository subpath",
+    "brand and source link retain subpath",
+    "sample and fixed example fetch at subpath",
+    "actual contract source check and four findings render",
+    "mobile no horizontal overflow",
+    "no browser errors"
+  ],
+  "rpcMethods": [
+    "eth_chainId",
+    "gen_getContractCode",
+    "gen_call",
+    "gen_call"
+  ],
+  "walletConnected": false,
+  "transactionsSent": 0
+}
