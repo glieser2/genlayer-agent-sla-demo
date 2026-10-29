@@ -1,0 +1,69 @@
+{
+  "version": "0.1.5",
+  "date_beijing": "2026-10-30",
+  "network": "stable Studionet",
+  "chain_id": 61999,
+  "rpc": "https://studio.genlayer.com/api",
+  "sdk": "genlayer-js@1.1.8",
+  "scope": "One synthetic local-browser deploy and assess using the memory-only temporary-account mode",
+  "account": "0x43Cf9D33Dbb9a3206f2eCe92Dd2460790a0da9F2",
+  "contract": "0xc71FfDb03c187Cce264EB39832CFd0A6cF384460",
+  "consensus_target": "0x0000000000000000000000000000000000000000",
+  "guards": "Runtime chain, dispatcher and exact ABI checks retained; value and gasPrice required to be zero",
+  "source_sha256": "9bab25a9f898d20ec6af13f0e34aa19d395998f973a592d379726e48304dd912",
+  "snapshot_sha256": "5e7433a01618bfbc7ab213c1b9bc5ac12eb186e20d1fd957ddd92e83ebe3624a",
+  "case_id": "SYNTHETIC-WEBSITE-001",
+  "transactions": {
+    "deployment": {
+      "hash": "0x6597080c33e4d9adff38ada38a5196bad22da22c233cf0e5a7faf85840d2d860",
+      "explorer": "https://explorer-studio.genlayer.com/tx/0x6597080c33e4d9adff38ada38a5196bad22da22c233cf0e5a7faf85840d2d860",
+      "status": "FINALIZED",
+      "type": 1,
+      "value": 0,
+      "sender": "0x43Cf9D33Dbb9a3206f2eCe92Dd2460790a0da9F2",
+      "recipient": "0xc71FfDb03c187Cce264EB39832CFd0A6cF384460",
+      "leader_execution": "SUCCESS"
+    },
+    "assessment": {
+      "hash": "0xe5d1e39c40c74ec81b4ed107c3b4e61a273e02c6a850f00b2d936e646940a5de",
+      "explorer": "https://explorer-studio.genlayer.com/tx/0xe5d1e39c40c74ec81b4ed107c3b4e61a273e02c6a850f00b2d936e646940a5de",
+      "status": "FINALIZED",
+      "type": 2,
+      "value": 0,
+      "sender": "0x43Cf9D33Dbb9a3206f2eCe92Dd2460790a0da9F2",
+      "recipient": "0xc71FfDb03c187Cce264EB39832CFd0A6cF384460",
+      "leader_execution": "SUCCESS"
+    }
+  },
+  "findings": {
+    "C1": "met",
+    "C2": "not_met",
+    "C3": "not_met",
+    "C4": "not_met"
+  },
+  "evidence_references": {
+    "C1": [
+      "INPUT:timestamps"
+    ],
+    "C2": [
+      "INPUT:report"
+    ],
+    "C3": [
+      "E1"
+    ],
+    "C4": [
+      "E2"
+    ]
+  },
+  "deployed_source_snapshot_and_result_read_back_in_browser": true,
+  "account_ended_after_verification": true,
+  "private_key_read_exported_or_persisted": false,
+  "new_chain_transactions": 2,
+  "submit_clicks_per_operation": 1,
+  "test_receipts_are_live": true,
+  "offline_tests_use_fake_account": true,
+  "screenshot": "studio-session-live-2026-10-30.png",
+  "publication": "pending_at_live_verification_capture; see repository Actions for subsequent deployment status",
+  "limits": "Resettable development network; one synthetic run; no evidence authentication, payment settlement or Portal acceptance claim",
+  "snapshot_serialization": "SHA-256 of the canonical JSON returned by get_snapshot (sorted keys, compact separators), not the formatted fixture file"
+}

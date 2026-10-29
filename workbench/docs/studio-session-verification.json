@@ -1,0 +1,42 @@
+{
+  "version": "0.1.5",
+  "client_date": "2026-10-30",
+  "status": "local browser route live-verified; pre-publication verification snapshot",
+  "tests": {
+    "total": 34,
+    "passed": 34,
+    "failed": 0,
+    "new_session_tests": 16,
+    "mode": "real SDK with fake account/signature bytes and fully intercepted RPC",
+    "log": "studio-session-tests.tap"
+  },
+  "typescript_and_vite_build": "passed",
+  "pages_subpath_build": "passed",
+  "build_warning": "Vite reports a JavaScript chunk larger than 500 kB; build succeeds.",
+  "browser_ui_verified": true,
+  "browser_ui_blocker": null,
+  "new_route_live_tested": true,
+  "real_accounts_created": 1,
+  "real_signatures_generated": 2,
+  "new_chain_transactions": 2,
+  "published": false,
+  "portal_resubmitted": false,
+  "contract_and_dependency_lock_unchanged": true,
+  "source_sha256": {
+    "package.json": "31add79d75c774a2956a572f99da23e3b0fba68617432a56804a9ee76fc6ad44",
+    "README.md": "67a3278352afcba98c0b5cc86d0d2a8aaefa010b799df02a4d4320c9e2e10279",
+    "src/main.ts": "d94cd9f17d8ff907cc54478cb363c1f9d5cc03a57d2c430e93c837985a22dfd5",
+    "src/studio.ts": "8e2a3fca591db76b10cf18b670c49e3d5c54824d09860ce01648877060d35672",
+    "src/studio-session.ts": "8a247dd1abf4a4934f13be1758ae21c20a1421324b6a9632f6bd00330fb99f3c",
+    "tests/studio-session.test.mjs": "3ef6e13c7778ad9e7f60c20cb9dcc6083d410275d08da7126e1c8f7680e22566",
+    "docs/STUDIO-SESSION.md": "efafba6b81143ebf7ce5912eb3407a4f7bac1b5c067d95318089e0173bc18fdc"
+  },
+  "offline_test_and_build_date": "2026-10-29",
+  "tested_executable_files_match_frozen_package": true,
+  "temporary_account_ended": true,
+  "live_verification": "studio-session-live-2026-10-30.json",
+  "publication_fields_are_capture_time_only": true,
+  "audit_date": "2026-10-30",
+  "audit_test_rerun": "34 passed, 0 failed; no live transactions",
+  "audit_pages_build": "passed; existing >500 kB chunk warning only"
+}
