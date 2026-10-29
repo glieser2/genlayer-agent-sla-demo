@@ -1,6 +1,6 @@
 // Only public read methods; this module never submits a transaction.
 export const STUDIO_RPC='https://studio.genlayer.com/api';
-export async function studioRpc(method:'sim_getConsensusContract'|'gen_getStudioTransactionByHash',params:unknown[]) {
+export async function studioRpc(method:'sim_getConsensusContract'|'gen_getStudioTransactionByHash'|'eth_chainId'|'eth_gasPrice',params:unknown[]) {
   const r=await fetch(STUDIO_RPC,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params}),signal:AbortSignal.timeout(15000)});
   if(!r.ok)throw new Error(`Studio RPC HTTP ${r.status}`);
   const v=await r.json();if(v.error)throw new Error(`Studio RPC: ${v.error.message??'unknown error'}`);return v.result as unknown;
@@ -8,7 +8,8 @@ export async function studioRpc(method:'sim_getConsensusContract'|'gen_getStudio
 const object=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v);
 export function consensusTarget(v:unknown):`0x${string}` {
   if(!object(v)||typeof v.address!=='string'||!/^0x[0-9a-fA-F]{40}$/.test(v.address)||!Array.isArray(v.abi))throw new Error('Studio 共识配置无效，已停止签名。');
-  const ok=v.abi.some(f=>object(f)&&f.type==='function'&&f.name==='addTransaction'&&Array.isArray(f.inputs)&&f.inputs.map(i=>object(i)?i.type:'').join(',')==='address,address,uint256,uint256,bytes');
+  const candidates=v.abi.filter(f=>object(f)&&f.type==='function'&&f.name==='addTransaction');
+  const ok=candidates.length===1&&candidates.every(f=>object(f)&&Array.isArray(f.inputs)&&f.inputs.map(i=>object(i)?i.type:'').join(',')==='address,address,uint256,uint256,bytes');
   if(!ok)throw new Error('Studio 当前交易 ABI 与固定 SDK 不匹配，已停止签名。');
   // Zero is the official Studio simulator's dispatch address; only chain 61999.
   return v.address as `0x${string}`;

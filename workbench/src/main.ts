@@ -3,6 +3,7 @@ import './action-feedback.css';
 import {parseCase, parseResult, objectiveFindings, address, hash, receiptOutcome, parseJournal, type CaseInput, type Finding, type TxRecord} from './domain.ts';
 import {CHAIN, NETWORK_NAME, readClient, makeWriter, checkNetwork, switchNetwork, contractUrl, transactionUrl, type Provider} from './network.ts';
 import {studioRpc,normalizeStudioTransaction} from './studio.ts';
+import {createStudioSession,type SessionReview} from './studio-session.ts';
 declare global { interface Window { ethereum?: Provider; } }
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const appBase=import.meta.env.BASE_URL;
@@ -16,18 +17,23 @@ document.querySelector('#app')!.innerHTML = `
 <div class="notice"><strong>开发预览版</strong><span>合成示例与链上读取分别标记；评估仅针对提供的材料，不认证证据、不结算资金。Studionet 开发网可能重置。</span></div>
 <nav class="steps" aria-label="工作区"><button class="tab active" data-panel="prepare">01　准备证据</button><button class="tab" data-panel="chain">02　链上评估</button><button class="tab" data-panel="history">03　交易记录</button></nav>
 <section id="prepare" class="panel"><div class="workspace"><article class="card"><div class="card-title"><div><p class="eyebrow">CASE SNAPSHOT</p><h2>你的交付证据包</h2></div><span id="case-status" class="pill">待检查</span></div><p class="muted">上传或编辑 JSON。部署后该份证据包不可更改。不要上传密码、密钥或不宜公开的个人资料。</p><div class="toolbar"><button id="sample">加载合成案例</button><label class="file-button" for="import">导入 JSON<input type="file" id="import" accept=".json,application/json"></label><button id="save-input">下载证据包</button></div><label for="snapshot" class="sr-only">交付证据 JSON</label><textarea id="snapshot" spellcheck="false" placeholder="加载合成案例，或粘贴你的证据 JSON…"></textarea><div class="editor-footer"><span id="byte-count">0 / 16,000 字节</span><button id="validate" class="dark">检查证据 →</button></div></article><aside class="card criteria"><p class="eyebrow">SLA-DEMO-v1</p><h2>四项标准，同一份证据</h2><div class="criterion"><b>C1</b><div><h3>按时交付</h3><p>提交时间不晚于约定时间。</p><small>确定性检查</small></div></div><div class="criterion"><b>C2</b><div><h3>测试与版本</h3><p>报告对应交付版本，所有测试通过。</p><small>确定性检查</small></div></div><div class="criterion"><b>C3</b><div><h3>响应式布局</h3><p>360、768、1440px 下没有横向溢出。</p><small>GenLayer 语义评估</small></div></div><div class="criterion"><b>C4</b><div><h3>交接文档</h3><p>有与交付版本对应的安装、运行及测试说明。</p><small>GenLayer 语义评估</small></div></div><button id="show-example" class="full">查看合成示例结果 ↗</button><p class="footnote">证据不足是一种有效结果，不会自动当作交付失败。</p></aside></div></section>
-<section id="chain" class="panel hidden"><div class="workspace"><article class="card"><p class="eyebrow">GENLAYER CONNECTION</p><h2>连接已有合约，或部署新证据包</h2><p class="muted">目标：${NETWORK_NAME}。此网络可重置，不代表 Bradbury 部署或 Portal 已认可该网络。</p><div class="toolbar"><button id="check-network">检查网络</button><a href="https://studio.genlayer.com" target="_blank" rel="noreferrer">打开官方 Studio ↗</a><a href="${asset('contracts/agent_sla.py')}" download>下载合约源码 ↓</a></div><p id="network-state" class="footnote">尚未连接 RPC</p><label for="contract">合约地址</label><div class="input-row"><input id="contract" placeholder="0x…" autocomplete="off"><button id="read" class="dark">读取结果</button></div><p class="footnote">读取前会校验链上源码是否与本应用附带版本一致，不需要连接钱包。</p><hr><h3>准备本次交易</h3><p class="muted">当前使用稳定 Studionet（61999）和 SDK 1.1.8。Studio 的零地址派发与当前浏览器钱包不兼容，应用会在请求签名前停止；只读查询仍可使用。</p><div class="toolbar"><button id="quote-deploy">准备新部署</button><button id="quote-assess">准备 assess 评估</button></div><p class="footnote">新部署固定当前证据包；assess 仅允许原部署者调用一次。当前钱包兼容问题不能通过充值解决。</p></article><aside class="card"><p class="eyebrow">TRANSACTION REVIEW</p><h2>签名前复核</h2><p id="quote-empty" class="muted">先连接钱包并获取交易复核。任何链上操作都需要你在钱包中确认。</p><pre id="quote-summary" class="hidden"></pre><label class="check"><input id="consent" type="checkbox">我已复核网络和证据摘要，并会检查钱包展示的费用，愿意在钱包中确认本次操作。</label><button id="submit" class="dark full" disabled>等待准备</button><p class="footnote">应用不接收私钥或助记词。交易发出后，超时只会保留原 ID 继续查询，不会自动再次提交。</p></aside></div></section>
+<section id="chain" class="panel hidden"><div class="workspace"><article class="card"><p class="eyebrow">GENLAYER CONNECTION</p><h2>连接已有合约，或部署新证据包</h2><p class="muted">目标：${NETWORK_NAME}。此网络可重置，不代表 Bradbury 部署或 Portal 已认可该网络。</p><div class="toolbar"><button id="check-network">检查网络</button><a href="https://studio.genlayer.com" target="_blank" rel="noreferrer">打开官方 Studio ↗</a><a href="${asset('contracts/agent_sla.py')}" download>下载合约源码 ↓</a></div><p id="network-state" class="footnote">尚未连接 RPC</p><label for="contract">合约地址</label><div class="input-row"><input id="contract" placeholder="0x…" autocomplete="off"><button id="read" class="dark">读取结果</button></div><p class="footnote">读取前会校验链上源码是否与本应用附带版本一致，不需要连接钱包。</p><hr><h3>准备本次交易</h3><p class="muted">当前使用稳定 Studionet（61999）和 SDK 1.1.8。浏览器钱包仍拦截零地址派发。要在本应用内测试完整写入流程，请明确选择下方临时测试账户；不会自动切换账户。</p><div class="toolbar"><button id="quote-deploy">准备新部署</button><button id="quote-assess">准备 assess 评估</button></div><p class="footnote">新部署固定当前证据包；assess 仅允许原部署者调用一次。当前钱包兼容问题不能通过充值解决。</p></article><aside class="card"><p class="eyebrow">TRANSACTION REVIEW</p><h2>签名前复核</h2><p id="quote-empty" class="muted">先选择账户并准备交易。临时测试账户由你在本页确认；外部钱包由你在钱包内确认。</p><pre id="quote-summary" class="hidden"></pre><label class="check"><input id="consent" type="checkbox">我已复核网络、账户、证据和费用，同意本次操作。临时测试账户在本页确认后会签名发送；外部钱包仍需钱包确认。</label><button id="submit" class="dark full" disabled>等待准备</button><p class="footnote">应用不接收私钥或助记词。交易发出后，超时只会保留原 ID 继续查询，不会自动再次提交。</p></aside></div></section>
 <section id="history" class="panel hidden"><article class="card"><div class="card-title"><div><p class="eyebrow">TRANSACTION JOURNAL</p><h2>继续查询，无需重复提交</h2></div><button id="export">导出工作记录 ↓</button></div><p class="muted">本机仅保存交易 ID、地址与状态，不保存你的证据包。记录内容来自 RPC，导出文件本身不是平台回执。</p><label for="txid">查询已有交易 ID</label><div class="input-row"><input id="txid" placeholder="0x…"><button id="track">查询交易</button></div><div id="journal"></div></article></section>
-<section class="results card"><div class="card-title"><div><p class="eyebrow">ASSESSMENT</p><h2>逐项复核</h2></div><span id="result-source" class="pill">尚无结果</span></div><p id="result-context" class="muted">检查证据可预览 C1/C2；C3/C4 需要链上评估。也可以单独查看标明来源的合成示例。</p><div id="findings" class="findings"></div></section><p id="message" role="status" aria-live="polite">准备好后，从证据包开始。</p><footer><span>Agent SLA Workbench · v0.1.4</span><span>AI 辅助开发 · 无资金托管 · 无法律裁判效力</span></footer></main>`;
+<section class="results card"><div class="card-title"><div><p class="eyebrow">ASSESSMENT</p><h2>逐项复核</h2></div><span id="result-source" class="pill">尚无结果</span></div><p id="result-context" class="muted">检查证据可预览 C1/C2；C3/C4 需要链上评估。也可以单独查看标明来源的合成示例。</p><div id="findings" class="findings"></div></section><p id="message" role="status" aria-live="polite">准备好后，从证据包开始。</p><footer><span>Agent SLA Workbench · v0.1.5</span><span>AI 辅助开发 · 无资金托管 · 无法律裁判效力</span></footer></main>`;
 
 const feedback=document.createElement('p');feedback.id='chain-feedback';feedback.className='action-feedback';feedback.setAttribute('role','status');feedback.setAttribute('aria-live','polite');feedback.textContent='点击“准备新部署”后，这里会显示进度或需要处理的问题。';
 $('quote-deploy').closest('.toolbar')!.before(feedback);
 let account: `0x${string}` | undefined;
+const studioSession=createStudioSession(); // Does not generate a key until start(true).
+let writeRoute:'wallet'|'session'='wallet';
+const sessionControls=document.createElement('div');
+sessionControls.innerHTML=`<h3>Studionet 临时测试账户</h3><p class="muted">在本页独立完成部署和 assess。新测试账户与 Portal 钱包、官方 Studio 已有账户不同。密钥只保留在当前页面内存；刷新、关闭或结束账户后不能恢复签名，只能读取已部署合约。请在同一页完成两步，不要向该账户转入资产。</p><label class="check"><input id="session-consent" type="checkbox">我同意在本页生成独立测试账户，仅用于 Studionet 的零金额、零 gasPrice 操作。</label><div class="toolbar"><button id="start-session">创建本页测试账户</button><button id="end-session" disabled>结束测试账户</button></div><p id="session-status" class="footnote">当前使用浏览器钱包路径；不会自动改用测试账户。</p>`;
+$('quote-deploy').closest('.toolbar')!.before(sessionControls);
 let busy = false;
 let records: TxRecord[] = [];
 try {records=parseJournal(localStorage.getItem('agent-sla:transactions:v1'));} catch { /* The app also works when browser persistence is disabled. */ }
 let evidence: Record<string, unknown> | null = null;
-type Quote = {kind:'deploy'|'assess'; account:`0x${string}`; contract:string; snapshot:string; code:string; balance:bigint; consensusTarget:string; at:number};
+type Quote = {kind:'deploy'|'assess'; account:`0x${string}`; contract:string; snapshot:string; code:string; balance:bigint; consensusTarget:string; at:number;route:'wallet'|'session';sessionReview?:SessionReview};
 let quote: Quote | null = null;
 const snapshot = () => $<HTMLTextAreaElement>('snapshot').value;
 const source = async () => {const r = await fetch(asset('contracts/agent_sla.py')); if(!r.ok) throw new Error('无法加载合约源码。'); return r.text();};
@@ -64,9 +70,13 @@ async function run(fn:()=>Promise<void>|void,button?:HTMLButtonElement) {
   if(busy){message('上一项操作仍在处理中，请查看进度或钱包请求。');return;}
   busy=true;document.body.classList.add('working');
   const label=button?.textContent;if(button){button.disabled=true;button.textContent='处理中…';}
-  try{await fn();}catch(e){message(e instanceof Error ? e.message : String(e),true);}finally{busy=false;document.body.classList.remove('working');if(button){if(button.textContent==='处理中…')button.textContent=label??'';if(button.id!=='submit')button.disabled=false;}}
+  try{await fn();}catch(e){message(e instanceof Error ? e.message : String(e),true);}finally{busy=false;document.body.classList.remove('working');if(button){if(button.textContent==='处理中…')button.textContent=label??'';if(button.id!=='submit')button.disabled=button.id==='end-session'&&writeRoute!=='session';}}
 }
 async function walletCheck() {
+  if(writeRoute==='session') {
+    if(!account||studioSession.address!==account)throw new Error('临时测试账户已失效。');
+    await checkNetwork();return;
+  }
   if(!window.ethereum || !account) throw new Error('请先连接浏览器钱包。');
   const chainId=Number(await window.ethereum.request({method:'eth_chainId'}));
   const accounts=await window.ethereum.request({method:'eth_accounts'}) as string[];
@@ -89,7 +99,8 @@ async function read(contract: `0x${string}`) {
   message('读取完成。可在交易记录中导出工作记录。');
 }
 async function prepareQuote(kind: 'deploy'|'assess') {
-  invalidate();message('正在核对钱包、网络和 Studio 当前配置…');await walletCheck();const writer=await makeWriter(account!,window.ethereum!);
+  invalidate();message('正在核对账户、网络和 Studio 当前配置…');await walletCheck();const route=writeRoute;
+  const writer=route==='wallet'?await makeWriter(account!,window.ethereum!):null;
   const unresolved=records.filter(r=>r.account.toLowerCase()===account!.toLowerCase()&&['pending','unknown'].includes(r.outcome));
   for(const record of unresolved.slice(0,3)) {
     message(`正在只读核对既有交易 ${short(record.hash)}，不会重发…`);
@@ -111,18 +122,26 @@ async function prepareQuote(kind: 'deploy'|'assess') {
     if(typeof stored!=='string')throw new Error('链上证据包无效。');parseCase(stored);raw=stored;setInput(raw);
   }
   message('正在读取测试网余额并生成签名前复核内容…');const balance=await readClient.getBalance({address:account!});
-  const consensusTarget=writer.chain.consensusMainContract!.address;
-  quote={kind,account:account!,contract,snapshot:raw,code,balance,consensusTarget,at:Date.now()};
-  $('quote-summary').textContent=json({operation:kind,network:NETWORK_NAME,chainId:CHAIN.id,account,contract:contract||'新部署',consensusTarget,configurationSource:'官方 Studio sim_getConsensusContract；仅适用开发网61999',caseId:parseCase(raw).case_id,snapshotSha256:await digest(raw),sourceSha256:await digest(code),balanceWei:String(balance),fee:'具体费用由钱包在签名前展示；尚未测量实际费用',note:'仅使用开发网测试币，不自动领取或充值'});
-  $('quote-summary').classList.remove('hidden');$('quote-empty').classList.add('hidden');$('submit').textContent=kind==='deploy'?'确认并请求部署签名':'确认并请求评估签名';message('交易内容已准备，5 分钟内有效。请在钱包确认界面检查费用。');
+  const sessionReview=route==='session'?await studioSession.prepare({kind,code,snapshot:raw,contract}):undefined;
+  const consensusTarget=sessionReview?.target??writer!.chain.consensusMainContract!.address;
+  quote={kind,account:account!,contract,snapshot:raw,code,balance,consensusTarget,at:Date.now(),route,sessionReview};
+  $('quote-summary').textContent=json({operation:kind,route:route==='session'?'本页临时测试账户，确认后由官方 SDK 签名':'浏览器钱包确认',network:NETWORK_NAME,chainId:CHAIN.id,account,contract:contract||'新部署',consensusTarget,configurationSource:'官方 Studio sim_getConsensusContract；仅适用开发网61999',caseId:parseCase(raw).case_id,snapshotSha256:await digest(raw),sourceSha256:await digest(code),balanceWei:String(balance),fee:route==='session'?'仅允许 value=0、gasPrice=0；签名前再次核对':'具体费用由钱包在签名前展示',note:'不会自动领取或充值；测试账户签名不会弹出 MetaMask'});
+  $('quote-summary').classList.remove('hidden');$('quote-empty').classList.add('hidden');$('submit').textContent=route==='session'?`确认并发送测试${kind==='deploy'?'部署':'评估'}`:kind==='deploy'?'确认并请求部署签名':'确认并请求评估签名';message('交易内容已准备，5 分钟内有效。每次操作都需要单独复核并确认。');
 }
 async function submit() {
   const q=quote;if(!q||!$<HTMLInputElement>('consent').checked)throw new Error('请先复核交易复核。');
   if(Date.now()-q.at>300000){invalidate();throw new Error('准备已过期，请重新准备。');}
-  invalidate();await walletCheck();const writer=await makeWriter(account!,window.ethereum!);
-  if(writer.chain.consensusMainContract?.address.toLowerCase()!==q.consensusTarget.toLowerCase()){invalidate();throw new Error('Studio 共识目标已变化，请重新准备交易。');}
-  if(account!==q.account || snapshot()!==q.snapshot || (q.kind==='assess' && $<HTMLInputElement>('contract').value.trim()!==q.contract)) {invalidate();throw new Error('证据、钱包或合约已变化，请重新准备。');}
-  const id=q.kind==='deploy'?await writer.deployContract({code:q.code,args:[q.snapshot]}):await writer.writeContract({address:address(q.contract),functionName:'assess',args:[],value:0n});
+  invalidate();await walletCheck();
+  if(writeRoute!==q.route||account!==q.account || snapshot()!==q.snapshot || (q.kind==='assess' && $<HTMLInputElement>('contract').value.trim()!==q.contract)) {invalidate();throw new Error('证据、账户或合约已变化，请重新准备。');}
+  let id:`0x${string}`;
+  if(q.route==='session') {
+    if(!q.sessionReview)throw new Error('缺少临时账户复核。');
+    id=await studioSession.submit(q.sessionReview,true);
+  } else {
+    const writer=await makeWriter(account!,window.ethereum!);
+    if(writer.chain.consensusMainContract?.address.toLowerCase()!==q.consensusTarget.toLowerCase())throw new Error('Studio 共识目标已变化，请重新准备交易。');
+    id=q.kind==='deploy'?await writer.deployContract({code:q.code,args:[q.snapshot]}):await writer.writeContract({address:address(q.contract),functionName:'assess',args:[],value:0n});
+  }
   hash(id);records.push({hash:id,kind:q.kind,chainId:CHAIN.id,account:q.account,contract:q.contract,createdAt:new Date().toISOString(),outcome:'pending'});saveRecords();show('history');message(`交易已发送：${id}。尚未确认执行成功。`);
   await track(id);
 }
@@ -147,18 +166,20 @@ bind('sample',async()=>{const r=await fetch(asset('fixtures/case.json'));if(!r.o
 bind('validate',()=>{const c=parseCase(snapshot());$('case-status').textContent='结构检查通过';render(objectiveFindings(c),'本地确定性预览',`${c.case_id} · C3/C4 尚未评估。结构有效不代表证据真实。`);message('证据包结构有效，已预览 C1/C2。');});
 bind('show-example',async()=>{const [a,b]=await Promise.all([fetch(asset('fixtures/case.json')),fetch(asset('fixtures/demo-result.json'))]);const c=parseCase(await a.text());const demo=await b.json();const result=parseResult(json(demo.assessment),c);render(result.findings,'合成示例 · 固定模拟响应','来自历史 SDK 本地测试，不是当前输入的判断，也不是链上结果。');message('正在展示合成示例。');});
 bind('save-input',()=>{const c=parseCase(snapshot());download('sla-evidence.json',json(c));});
-bind('connect',async()=>{invalidate();if(!window.ethereum)throw new Error('当前浏览器未检测到钱包扩展。请在安装钱包的 Chrome 中打开此应用。');const list=await window.ethereum.request({method:'eth_requestAccounts'}) as string[];if(!list.length)throw new Error('没有授权的钱包账号。');account=address(list[0]);await switchNetwork(window.ethereum);await walletCheck();$('connect').textContent=short(account);message('钱包已连接 Studionet 开发网；未发送任何交易。');});
+bind('connect',async()=>{invalidate();if(writeRoute==='session')throw new Error('当前正在使用本页测试账户。结束测试账户后才能连接浏览器钱包。');if(!window.ethereum)throw new Error('当前浏览器未检测到钱包扩展。请在安装钱包的 Chrome 中打开此应用。');const list=await window.ethereum.request({method:'eth_requestAccounts'}) as string[];if(!list.length)throw new Error('没有授权的钱包账号。');account=address(list[0]);await switchNetwork(window.ethereum);await walletCheck();$('connect').textContent=short(account);message('钱包已连接 Studionet 开发网；未发送任何交易。');});
+bind('start-session',async()=>{invalidate();const a=await studioSession.start($<HTMLInputElement>('session-consent').checked);account=a;writeRoute='session';$('connect').textContent=`测试 ${short(a)}`;$('session-status').textContent=`本页测试账户 ${a}。部署和 assess 使用同一账户，刷新后不可恢复。`;$<HTMLButtonElement>('end-session').disabled=false;message('本页测试账户已创建，尚未签名或发送交易。');});
+bind('end-session',()=>{invalidate();studioSession.end();writeRoute='wallet';account=undefined;$('connect').textContent='连接钱包';$('session-status').textContent='测试账户已结束，已部署合约仍可读取；该临时密钥不可恢复。';$<HTMLInputElement>('session-consent').checked=false;$<HTMLButtonElement>('end-session').disabled=true;message('已结束测试账户。交易记录继续保留，密钥未保存。');});
 bind('check-network',async()=>{const n=await checkNetwork();$('network-state').textContent=`已验证 chain ${n.chainId} · ${n.rpc}`;message('RPC 链 ID 检查通过，尚未验证合约部署兼容性。');});
 bind('read',()=>read(address($<HTMLInputElement>('contract').value.trim())));
 const readVerified=document.createElement('button');readVerified.id='read-verified';readVerified.textContent='读取链上合成案例 ↗';$('check-network').parentElement!.append(readVerified);
 bind('read-verified',()=>{const contract=address('0x12de9d0F0CEFC3697e76656A3b520c302e17faE9');$<HTMLInputElement>('contract').value=contract;invalidate();return read(contract);});
 bind('quote-deploy',()=>prepareQuote('deploy'));bind('quote-assess',()=>prepareQuote('assess'));bind('submit',submit);
 bind('track',()=>track($<HTMLInputElement>('txid').value.trim()));
-bind('export',()=>{download('agent-sla-work-record.json',json({app:'agent-sla-workbench',version:'0.1.4',generatedAt:new Date().toISOString(),transactions:records,chainRead:evidence,note:'RPC observations and local records; not a Portal acceptance or reward receipt. No input evidence text is included.'}));message('工作记录已导出。');});
+bind('export',()=>{download('agent-sla-work-record.json',json({app:'agent-sla-workbench',version:'0.1.5',generatedAt:new Date().toISOString(),transactions:records,chainRead:evidence,note:'RPC observations and local records; not a Portal acceptance or reward receipt. No input evidence text is included.'}));message('工作记录已导出。');});
 $('snapshot').addEventListener('input',()=>{invalidate();$('case-status').textContent='待检查';$('byte-count').textContent=`${new TextEncoder().encode(snapshot()).length.toLocaleString()} / 16,000 字节`;});
 for(const id of ['contract'])$(id).addEventListener('input',invalidate);
 $('consent').addEventListener('change',()=>{$<HTMLButtonElement>('submit').disabled=!quote||!$<HTMLInputElement>('consent').checked;});
 $('import').addEventListener('change',()=>run(async()=>{const f=$<HTMLInputElement>('import').files?.[0];if(!f)return;if(f.size>16000)throw new Error('文件超过 16,000 字节。');const raw=await f.text();parseCase(raw);setInput(raw);message('已导入证据包，仅保留在当前页面内存中。');}));
 const provider=window.ethereum as Provider & {on?:(event:string,fn:()=>void)=>void};
-for(const event of ['accountsChanged','chainChanged'])provider?.on?.(event,()=>{account=undefined;invalidate();$('connect').textContent='重新连接钱包';message('钱包网络或账号发生变化，请重新连接。');});
+for(const event of ['accountsChanged','chainChanged'])provider?.on?.(event,()=>{if(writeRoute==='session')return;account=undefined;invalidate();$('connect').textContent='重新连接钱包';message('钱包网络或账号发生变化，请重新连接。');});
 renderRecords();
