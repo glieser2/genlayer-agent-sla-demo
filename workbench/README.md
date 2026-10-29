@@ -1,72 +1,72 @@
 # Agent SLA Workbench
 
-**0.1.4发布准备**：源码v0.1.3的36文件已公开并逐项核对，提交8f261a5947f3ffc98033d0efc93777d59a67817e。此版本补充GitHub Pages仓库子路径支持，源码、样例和首页链接均遵循Vite BASE_URL；`pnpm run build:pages`生成`/genlayer-agent-sla-demo/`路径的静态站。公开站点仍未启用；拟访问地址为https://glieser2.github.io/genlayer-agent-sla-demo/，不是已上线证明。新增发布工作流仅由用户手动触发，不自动执行链上操作，不读取钱包密钥，不使用个人API密钥。公开网站启用及此批改动另行确认，旧版链上合约不变。
+Browser application for reviewing synthetic website-delivery evidence against a fixed SLA rubric. It validates JSON, previews deterministic C1/C2 checks, verifies deployed source, runs an Intelligent Contract through GenLayer consensus, tracks finality and reads the C1–C4 findings.
 
-**评估实测更新（2026-10-28，以本段为准）**：同一官方Studio内置测试账户完成一次assess，交易`0x4af53904b20f6581db81e7669c44f67a974e35595d3064b4e089dd9cb2b05106`为type2、FINALIZED且执行成功。真实网络结果是C1满足，C2/C3/C4未满足；输入为明确标注的合成案例，这些负面结论不是交易失败。本地前端无需钱包即可核对源码并读取实际结果；在“链上评估”点击“读取链上合成案例”，或填写下方真实合约地址。`tests/live-contract-read.mjs`已通过真实只读RPC核对UI呈现。原定单次部署和单次assess已完成，勿重复。尚无新应用公开发布或Portal接受证据。
+**Revision 0.1.5.** This revision addresses the Projects review request for a working in-app deploy/assess route and reproducible tests. It adds an explicit, memory-only Studionet testing account using the official SDK and preserves the external browser-wallet zero-dispatcher guard. Publication does not establish acceptance of the Projects submission.
 
-**部署实测更新（2026-10-28）**：用户经明确同意后，使用官方Studio内置测试账户部署一份原合约。只读RPC核实部署交易`0x6cd7a290558ab19549cbebd5d794c85e59cf72309d196ebd76cca8adf679280b`为type1、FINALIZED且执行成功，合约`0x12de9d0F0CEFC3697e76656A3b520c302e17faE9`源码与已审核版本完全相同，冻结案例语义一致。assess尚未执行。该事实不代表原MetaMask路径已兼容、Portal已接受或新前端已公开。详细精简记录见docs/contract-0x12de9d0f0cefc3697e76656a3b520c302e17fae9.json；下方更新段落中的“尚未部署”为各历史阶段状态。
+## Run and reproduce
 
-**0.1.3更新（2026-10-28，以本段为准）**：用户已取消MetaMask阻断的未签名请求。当前Studio返回零地址派发目标，应用在准备及提交前阻止这类浏览器钱包请求；连接账户、只读查询和本地证据检查保留。18项逻辑测试、12项模拟钱包检查通过；实际Studio RPC浏览器只读检查确认拦截有效、签名请求0。非零目标仅在隔离测试中模拟，不代表真实网络存在该目标。当前仍无成功部署，不应继续点击钱包提醒或充值。下一步先查看官方Studio的账户/网络选项，不自动更换账户或网络。
+Use Node.js 24+ and pnpm. Dependencies remain pinned: genlayer-js 1.1.8, TypeScript 7.0.2, Vite 8.3.5.
 
-**0.1.2更新（2026-10-28）**：处理“准备新部署没有反应”的可观察性问题。按钮旁新增即时进度/错误，处理中显示明确状态并阻止重复点击；恢复后保留连接钱包等操作的新标签。准备阶段只读刷新旧pending记录，确认非合约转移后解除其阻挡；真正未确认的合约仍阻止新部署。独立浏览器使用假账号、真实Studio RPC完成只读预检成功，没有签名或交易。17项逻辑测试、11项UI检查、10项模拟钱包检查通过。刷新后页脚应为0.1.2；真实钱包确认仍由用户完成。
-
-**0.1.1修复记录（2026-10-28）**：用户实际提交的一次请求被稳定Studio记录为FINALIZED的type0、value0转移，没有合约执行。发现SDK内置共识地址与`sim_getConsensusContract`当前返回地址不一致；初版仅检查schema，没有核对目标地址。现签名前解析官方运行配置、校验ABI并绑定目标，提交前再次核对；使用`gen_getStudioTransactionByHash`读取实际type及首个leader回执，拒绝把转移或未知执行记作部署成功。17项逻辑测试和8项模拟钱包检查通过。仍未证明真实部署成功，修复后的重试仍限于原授权的一份合约，真实钱包确认由用户操作。以下0.1.0内容为此前阶段说明，以此更新为准。
-
-交付证据工作台：把固定 SLA 合约接入可操作的浏览器应用，准备作为 GenLayer **Projects** 的候选作品。当前版本0.1.0，AI辅助开发。
-
-**当前状态：本地应用已实现；稳定Studionet的实际部署、源码、冻结案例、真实网络评估及前端只读呈现均通过核对；尚未公开发布这个新应用，也没有Projects/Milestones投稿回执。** 公开的旧仓库只是合约原型，不将本应用的本地开发冒充已发布升级。
-
-## 实际流程
-
-1. 加载明确标注的合成案例，或导入不超过16,000字节的证据JSON；检查字段、版本、测试数量及证据引用。
-2. 在浏览器内预览C1/C2确定性检查。C3/C4不会伪装成本地AI评估。
-3. 用浏览器钱包连接**稳定 Studionet，chain ID 61999**。本应用通过标准钱包切换接口连接，不自动申请安装Snap。
-4. 准备新部署：在RPC解析合约schema，复核源码/证据摘要和钱包余额，再由用户在钱包中查看费用并确认。
-5. 部署后读取冻结的证据包，由原部署者准备并调用一次`assess()`；实际判断须由网络运行。合约不收付款、不托管资金。
-6. 查询原交易ID，区分尚未终局、执行失败、执行未知及终局成功。确认执行成功后才读取结果；读取前检查链上源码与应用所带源码一致。
-7. 按C1–C4展示状态、理由及引用，下载当前RPC观察和本机交易记录。记录不是Portal审核回执。
-
-## 本地启动
-
-要求：Node.js >=24（本次Node24.19.0）、pnpm。依赖用`pnpm-lock.yaml`锁定：GenLayerJS1.1.8、TypeScript7.0.2、Vite8.3.5。
-
-```powershell
+```sh
 pnpm install --frozen-lockfile --ignore-scripts
 pnpm test
+pnpm run test:studio-session
 pnpm run build
+pnpm run build:pages
 pnpm run dev --port 5173 --strictPort
 ```
 
-在安装钱包的Chrome打开 http://127.0.0.1:5173 。内置预览可查看界面，但不保证能访问浏览器钱包扩展。服务只监听127.0.0.1。
+Open http://127.0.0.1:5173 in Chrome. The Pages build retains the /genlayer-agent-sla-demo/ base path. The test commands above use mocks and do not generate real keys or send real transactions. Separately authorized browser writes are recorded below.
 
-## 验证与边界
+## Account modes
 
-- `tests/domain.test.mjs`：13项测试覆盖输入边界、UTF-8字节计数、证据关联、结果绑定和终局/执行状态区别。
-- `tests/ui-smoke.mjs`：独立Chrome对本机页面做桌面、390px手机布局、错误提示与示例来源测试；阻断外部网络，无真实钱包调用。
-- `tests/wallet-flow.mjs`：完全模拟的钱包和RPC，验证复核、同意控件、输入变化失效及拒签后不得直接重复提交。模拟签名请求不是真实签名。
-- UI脚本需要Playwright及本机Chrome。开发环境可设置`PLAYWRIGHT_MODULE`为已有Playwright模块的file URL，或自行安装开发测试工具；该变量不包含凭据。
-- `node inspect-network.mjs --record`仅查询官方稳定网chain ID和源码schema，结果保存到`docs/network-check.json`；不部署、不调用LLM、不连接钱包。
-- 合约及合成数据与已审查公开原型按字节相同；原合约历史23项策略测试、6项SDK直接模式测试及3项AST检查属于旧版验证记录，不声称本次重跑，也不把它们当作网络共识证明。
-- schema成功不能证明构造、闭包序列化、真实模型评估或交易执行成功。仍需实际部署和读写验证。
+- **External browser wallet:** requires the wallet's confirmation. A zero Studio dispatcher is rejected before requesting a signature. The app never automatically changes to another account after a refusal.
+- **Temporary Studionet test account:** explicitly created in the page with the official SDK. The key is kept only in page memory. No private-key import/export, storage, logging, URL parameter or connection to the user's existing wallet is provided. It is distinct from the Portal wallet and the official Studio site's built-in account.
+- Refreshing, closing or ending the temporary account loses its signing capability. Finish deployment and assess in the same page session. Existing contracts stay readable. Do not send assets to this disposable account.
 
-## 账户与费用
+The temporary route is restricted to stable Studionet **61999**, https://studio.genlayer.com/api, zero transaction value and zero gas price. Before preparing and signing, the app verifies network identity, runtime dispatcher and the supported five-argument addTransaction ABI. It rejects stale reviews, drift, unsupported ABIs and repeat signatures. This is an opt-in developer test route, not a production wallet.
 
-不输入、不导出私钥、助记词或API密钥；不自动领水龙头或购买任何资产。Studionet测试币可由用户在官方Studio的账户选择器人工领取；不能把它当作Bradbury余额或Portal积分。
+## Browser workflow
 
-默认不将证据包写入浏览器存储。用户签名部署后，证据会进入所选开发网；请只使用可以公开的材料。本机存储仅包含交易ID、地址及状态。浏览器存储不可用时记录只保留在内存。关闭页面前应记录交易ID。SDK若在广播后、返回GenLayer ID前断线，可能无法自动恢复；先核对钱包及浏览器，不能凭错误提示就重新发交易。
+1. Load the labelled synthetic case or import public evidence JSON; click **检查证据**.
+2. Open **链上评估**, read the temporary-account notice, opt in and click **创建本页测试账户**.
+3. Prepare deployment, review account/network/source/snapshot/fees, then separately confirm that operation.
+4. Use **交易记录 → 继续查询** for the same ID until FINALIZED and execution SUCCESS. Finality alone is not success.
+5. Keep the same page and account. Prepare and confirm assess for the contract deployed by this session. Source and frozen snapshot are rechecked; contracts owned by other accounts and already-assessed contracts are rejected.
+6. Read the actual findings and export public transaction metadata. Unknown broadcast state blocks further signing in the session; investigate instead of redeploying.
 
-源码比对是应用兼容检查，不是证据真实性证明。恶意但内部一致的材料仍可能误导判断。固定提示和结果校验不构成抗提示注入或模型准确性保证。
+The UI uses Chinese. See [the reviewer verification guide](docs/STUDIO-SESSION.md) for English mappings, safeguards and exact testing limits.
 
-## 网络选择的实测依据
+## Tests and evidence boundaries
 
-最终组合为GenLayerJS1.1.8、稳定Studionet61999、原始固定运行时依赖`py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6`。
+`tests/studio-session.test.mjs` executes the real pinned SDK against a fake account and intercepted RPC. Fake signature bytes are intentionally invalid outside that test. It decodes the resulting deployment and assess payloads to verify source, snapshot, function, sender, dispatcher and zero value. It also covers account lifetime, ABI/network drift, gas price, missing consensus events, pending/wrong/failed receipts and duplicate/expired approvals. No private key is generated and no call reaches the live network.
 
-开发时测试过SDK2.0.0-rc.2与Studio-dev61997，schema返回`invalid_contract runner malformed`，最小对照合约也报同类错误；调整到官方当前示例依赖仍未解决。之后原合约在稳定网解析成功，因此采用实测通过的稳定组合。没有据此断言预览网根因，也没有向失败环境部署。
+The other source tests cover evidence validation and receipt handling. All 34 source tests and both production builds passed. The fake-account tests and the live browser verification below are separate evidence.
 
-参考：[官方网络说明](https://docs.genlayer.com/developers/networks)、[SDK源码](https://github.com/genlayerlabs/genlayer-js)、[旧版运行时教程](https://docs.genlayer.com/developers/intelligent-contracts/first-contract)。官方网络/工具会演进，升级时重新核对匹配关系。
+## Verified in-app browser writes — 2026-10-30 (UTC+8)
 
-## 投稿顺序
+The local v0.1.5 browser application completed one deployment and one assess through its temporary-account route in the user's Chrome. Both official Studio RPC receipts are **FINALIZED / SUCCESS**, with the same sender, zero value, deployment type 1 and assess type 2. The page verified deployed source and snapshot and displayed the actual result.
 
-先按[Projects材料](docs/PROJECTS.md)补真实部署、实际交互和公开应用证据；确认Steward接纳后，固定获批基线，再按[Milestones后续方案](docs/MILESTONES.md)做实质新增功能。不要把原型、完整应用与同一升级同时包装为重复贡献。
+- Temporary sender: `0x43Cf9D33Dbb9a3206f2eCe92Dd2460790a0da9F2`.
+- Contract: [0xc71F…4460](https://explorer-studio.genlayer.com/address/0xc71FfDb03c187Cce264EB39832CFd0A6cF384460).
+- Deployment: [0x659708…d2d860](https://explorer-studio.genlayer.com/tx/0x6597080c33e4d9adff38ada38a5196bad22da22c233cf0e5a7faf85840d2d860).
+- assess: [0xe5d1e3…40a5de](https://explorer-studio.genlayer.com/tx/0xe5d1e39c40c74ec81b4ed107c3b4e61a273e02c6a850f00b2d936e646940a5de).
+- Result: C1 met; C2/C3/C4 not_met, with input/evidence references. The case and measurements are synthetic.
+- The explicit zero-value/zero-gasPrice guards remained enabled. The temporary account was ended after verification; its key was not read, exported or persisted.
 
-对外发布本应用新文件、钱包签名与部署按用户约定另行审查授权。Portal最终提交授权已收到，仍遵守用户对平台禁止自动化时采用人工操作的要求。没有添加新开源许可证。
+See [the verification record](docs/studio-session-live-2026-10-30.json) and [browser result screenshot](docs/studio-session-live-2026-10-30.png). These writes verified the local source revision before publication. Check the repository's Pages workflow for the deployment status of a particular commit.
+
+**Historical live evidence, 2026-10-28:** the user deployed and assessed the unchanged contract in the separate official Studio UI, using its built-in test account. These are not new in-app v0.1.5 writes:
+- Contract: [0x12de…faE9](https://explorer-studio.genlayer.com/address/0x12de9d0F0CEFC3697e76656A3b520c302e17faE9)
+- Deployment: [FINALIZED/SUCCESS](https://explorer-studio.genlayer.com/tx/0x6cd7a290558ab19549cbebd5d794c85e59cf72309d196ebd76cca8adf679280b)
+- assess: [FINALIZED/SUCCESS](https://explorer-studio.genlayer.com/tx/0x4af53904b20f6581db81e7669c44f67a974e35595d3064b4e089dd9cb2b05106)
+- Results: C1 met; C2/C3/C4 not_met. Inputs and reported measurements are synthetic.
+
+## Limitations
+
+Studionet can reset. The temporary account is not recoverable after page loss and is not a persistent ownership solution. The contract assesses supplied evidence; it does not verify evidence authenticity, rerun website tests, settle payments, escrow assets or provide legal adjudication. Source matching and output validation do not guarantee model accuracy or resistance to prompt injection.
+
+The live run verifies the local browser application, not an additional run from the hosted Pages site. Studionet/account eligibility and acceptance remain subject to Steward review. This revision addresses the existing Projects request; it is not a Milestones submission.
+
+Official implementation references: [GenLayerJS](https://docs.genlayer.com/api-references/genlayer-js), [Studio account selection](https://github.com/genlayerlabs/genlayer-studio/blob/c94072951e483510329670aa427fba3fa6944f45/frontend/src/hooks/useGenlayer.ts). AI-assisted development; no new open-source licence added.

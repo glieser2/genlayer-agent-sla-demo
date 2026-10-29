@@ -1,6 +1,6 @@
 {
   "name": "agent-sla-workbench",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,6 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "build:pages": "tsc --noEmit && vite build --base=/genlayer-agent-sla-demo/",
     "test": "node --test tests/*.test.mjs",
+    "test:studio-session": "node --test tests/studio-session.test.mjs",
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
