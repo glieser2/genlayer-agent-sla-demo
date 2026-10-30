@@ -1,6 +1,6 @@
-# Studio browser write route — v0.1.5 review guide
+# Studio browser write route — v0.1.6 guide
 
-Verification snapshot: v0.1.5 implementation, 34 passing source tests, both passing builds, and one real local-browser deployment plus one assess verified on 2026-10-30 (UTC+8), before publication. Repository Actions records subsequent Pages deployment status; Portal acceptance is separate.
+The v0.1.6 update translates UI copy into English without changing the contract or signing flow. Historical verification snapshot: v0.1.5 implementation, 34 passing source tests, both passing builds, and one real local-browser deployment plus one assess verified on 2026-10-30 (UTC+8), before publication. Repository Actions records subsequent Pages deployment status; Portal acceptance is separate.
 
 ## Why this revision exists
 
@@ -19,17 +19,17 @@ The pinned SDK, `genlayer-js@1.1.8`, supports local accounts as well as EIP-1193
 
 ## Browser controls
 
-| Chinese label | Action |
+| English label | Action |
 |---|---|
-| 加载合成案例 / 检查证据 | Load the synthetic fixture / validate its schema |
-| 02 链上评估 | Open the contract interaction panel |
-| 创建本页测试账户 | Opt in first, then create a new temporary account |
-| 准备新部署 | Create an unsigned, five-minute deployment review |
-| 确认并发送测试部署 | Confirm exactly this deployment from the selected temporary account |
-| 03 交易记录 / 继续查询 | Inspect the same transaction ID until final execution is known |
-| 准备 assess 评估 | Prepare the single assess call for this session's confirmed deployment |
-| 确认并发送测试评估 | Confirm that separate call |
-| 结束测试账户 | Drop access to the account; the private key cannot be recovered |
+| Load synthetic case / Validate evidence | Load the synthetic fixture / validate its schema |
+| 02 On-chain Assessment | Open the contract interaction panel |
+| Create test account | Opt in first, then create a new temporary account |
+| Prepare deployment | Create an unsigned, five-minute deployment review |
+| Confirm and send test deployment | Confirm exactly this deployment from the selected temporary account |
+| 03 Transaction History / Check status | Inspect the same transaction ID until final execution is known |
+| Prepare assessment | Prepare the single assess call for this session's confirmed deployment |
+| Confirm and send test assessment | Confirm that separate call |
+| End test account | Drop access to the account; the private key cannot be recovered |
 
 Use the same page through deployment and assess. Keep the separate transaction confirmation checkbox unchecked until reviewing the operation. The test-account mode does not show a MetaMask popup: clicking its explicit confirm button authorizes SDK signing in the page. The external-wallet mode still requires its wallet confirmation and still rejects a zero dispatcher.
 
@@ -75,9 +75,6 @@ The browser read back the unchanged contract source, the reviewed synthetic snap
 
 See [machine-readable live evidence](studio-session-live-2026-10-30.json), [browser result](studio-session-live-2026-10-30.png) and [offline test/build metadata](studio-session-verification.json). This is one verified synthetic run on a resettable development network, not a reliability or production-readiness claim. The evidence records the local run before publication, not a second hosted-site write test.
 
-## Remaining steps before resubmission
+## Accepted project baseline
 
-1. Verify the published v0.1.5 Pages build and cite the actual successful workflow, source commit and test evidence.
-2. Update the existing Projects submission truthfully and have the user review and resubmit. The screenshot asks for a response before 2026-11-12; it does not provide a precise timezone/time.
-
-This revision is a correction to the submitted Projects application. Milestones still requires an accepted project baseline and a subsequent substantive upgrade.
+The corrected v0.1.5 Projects submission was accepted on 2026-10-30. This English UI update does not create a new Portal submission or claim another live write verification. Milestones requires a subsequent substantive upgrade beyond the accepted baseline.
