@@ -1,2 +1,6 @@
 .action-feedback{margin:15px 0;padding:12px 14px;border:1px solid #dce4ce;border-radius:7px;background:#f2f5eb;color:#647751;font-size:12px;overflow-wrap:anywhere}
 .action-feedback.error{background:#fff1e9;border-color:#efcbb5;color:#a15b36}
+.review-binding{margin:16px 0;padding:14px;border:1px solid #dce4ce;border-radius:8px;background:#f5f7f0;font-size:12px;overflow-wrap:anywhere}
+.review-binding[hidden]{display:none}
+.review-binding p{margin:7px 0;color:#65705d}
+.review-binding code{display:block;font-size:11px;white-space:normal;overflow-wrap:anywhere}

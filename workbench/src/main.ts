@@ -4,6 +4,7 @@ import {parseCase, parseResult, objectiveFindings, address, hash, receiptOutcome
 import {CHAIN, NETWORK_NAME, readClient, makeWriter, checkNetwork, switchNetwork, contractUrl, transactionUrl, type Provider} from './network.ts';
 import {studioRpc,normalizeStudioTransaction} from './studio.ts';
 import {createStudioSession,type SessionReview} from './studio-session.ts';
+import {createEvidenceReview} from './evidence-review.ts';
 declare global { interface Window { ethereum?: Provider; } }
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const appBase=import.meta.env.BASE_URL;
@@ -19,7 +20,7 @@ document.querySelector('#app')!.innerHTML = `
 <section id="prepare" class="panel"><div class="workspace"><article class="card"><div class="card-title"><div><p class="eyebrow">CASE SNAPSHOT</p><h2>Your delivery evidence</h2></div><span id="case-status" class="pill">Not validated</span></div><p class="muted">Import or edit JSON. Deployment freezes this evidence snapshot. Use public material only; never include passwords, private keys, or private personal data.</p><div class="toolbar"><button id="sample">Load synthetic case</button><label class="file-button" for="import">Import JSON<input type="file" id="import" accept=".json,application/json"></label><button id="save-input">Download evidence</button></div><label for="snapshot" class="sr-only">Delivery evidence JSON</label><textarea id="snapshot" spellcheck="false" placeholder="Load the synthetic case or paste your evidence JSON…"></textarea><div class="editor-footer"><span id="byte-count">0 / 16,000 bytes</span><button id="validate" class="dark">Validate evidence →</button></div></article><aside class="card criteria"><p class="eyebrow">SLA-DEMO-v1</p><h2>Four criteria. One evidence snapshot.</h2><div class="criterion"><b>C1</b><div><h3>On-time delivery</h3><p>Submitted on or before the agreed deadline.</p><small>Deterministic check</small></div></div><div class="criterion"><b>C2</b><div><h3>Tests and revision</h3><p>The report matches the delivered revision and all tests pass.</p><small>Deterministic check</small></div></div><div class="criterion"><b>C3</b><div><h3>Responsive layout</h3><p>No horizontal overflow at 360, 768, and 1440px.</p><small>GenLayer semantic assessment</small></div></div><div class="criterion"><b>C4</b><div><h3>Handover documentation</h3><p>Install, run, and test instructions match the delivered revision.</p><small>GenLayer semantic assessment</small></div></div><button id="show-example" class="full">View synthetic example ↗</button><p class="footnote">Insufficient evidence is a valid outcome, not an automatic delivery failure.</p></aside></div></section>
 <section id="chain" class="panel hidden"><div class="workspace"><article class="card"><p class="eyebrow">GENLAYER CONNECTION</p><h2>Read a contract or deploy evidence</h2><p class="muted">Network: ${NETWORK_NAME}. This development network may reset. A Studionet deployment does not establish Bradbury deployment or Portal network eligibility.</p><div class="toolbar"><button id="check-network">Check network</button><a href="https://studio.genlayer.com" target="_blank" rel="noreferrer">Open official Studio ↗</a><a href="${asset('contracts/agent_sla.py')}" download>Download contract source ↓</a></div><p id="network-state" class="footnote">RPC not checked</p><label for="contract">Contract address</label><div class="input-row"><input id="contract" placeholder="0x…" autocomplete="off"><button id="read" class="dark">Read results</button></div><p class="footnote">The deployed source must match the version bundled with this app. No wallet connection is needed to read results.</p><hr><h3>Prepare a transaction</h3><p class="muted">This app uses stable Studionet (61999) and SDK 1.1.8. The external-wallet route blocks the zero dispatcher. To test in-app writes, explicitly choose a temporary test account below. Accounts never switch automatically.</p><div class="toolbar"><button id="quote-deploy">Prepare deployment</button><button id="quote-assess">Prepare assessment</button></div><p class="footnote">Deployment freezes the current evidence. Only the deployer may call assess, once. Adding funds will not resolve the current wallet compatibility issue.</p></article><aside class="card"><p class="eyebrow">TRANSACTION REVIEW</p><h2>Review before signing</h2><p id="quote-empty" class="muted">Choose an account and prepare a transaction. Confirm temporary-account operations here; confirm external-wallet operations in your wallet.</p><pre id="quote-summary" class="hidden"></pre><label class="check"><input id="consent" type="checkbox">I have reviewed the network, account, evidence, and fees and approve this operation. Confirming a temporary-account operation signs and sends it from this page. An external wallet requires its own confirmation.</label><button id="submit" class="dark full" disabled>Prepare a transaction first</button><p class="footnote">Never enter a private key or recovery phrase. After submission, keep querying the original transaction ID; a timeout does not trigger resubmission.</p></aside></div></section>
 <section id="history" class="panel hidden"><article class="card"><div class="card-title"><div><p class="eyebrow">TRANSACTION JOURNAL</p><h2>Track progress without resubmitting</h2></div><button id="export">Export work record ↓</button></div><p class="muted">Only transaction IDs, addresses, and statuses are saved locally, not the evidence body. Exported RPC observations are not Portal receipts.</p><label for="txid">Existing transaction ID</label><div class="input-row"><input id="txid" placeholder="0x…"><button id="track">Check transaction</button></div><div id="journal"></div></article></section>
-<section class="results card"><div class="card-title"><div><p class="eyebrow">ASSESSMENT</p><h2>Findings by criterion</h2></div><span id="result-source" class="pill">No results yet</span></div><p id="result-context" class="muted">Validate evidence to preview C1/C2. C3/C4 require an on-chain assessment. A separately labelled synthetic example is also available.</p><div id="findings" class="findings"></div></section><p id="message" role="status" aria-live="polite">Start by loading or importing an evidence snapshot.</p><footer><span>Agent SLA Workbench · v0.1.6</span><span>AI-assisted development · No escrow · No legal authority</span></footer></main>`;
+<section class="results card"><div class="card-title"><div><p class="eyebrow">ASSESSMENT</p><h2>Findings by criterion</h2></div><span id="result-source" class="pill">No results yet</span></div><p id="result-context" class="muted">Validate evidence to preview C1/C2. C3/C4 require an on-chain assessment. A separately labelled synthetic example is also available.</p><div id="findings" class="findings"></div></section><p id="message" role="status" aria-live="polite">Start by loading or importing an evidence snapshot.</p><footer><span>Agent SLA Workbench · v0.1.7</span><span>AI-assisted development · No escrow · No legal authority</span></footer></main>`;
 
 const feedback=document.createElement('p');feedback.id='chain-feedback';feedback.className='action-feedback';feedback.setAttribute('role','status');feedback.setAttribute('aria-live','polite');feedback.textContent='Prepare a deployment to see progress or any issues here.';
 $('quote-deploy').closest('.toolbar')!.before(feedback);
@@ -33,6 +34,8 @@ let busy = false;
 let records: TxRecord[] = [];
 try {records=parseJournal(localStorage.getItem('agent-sla:transactions:v1'));} catch { /* The app also works when browser persistence is disabled. */ }
 let evidence: Record<string, unknown> | null = null;
+const evidenceReview=createEvidenceReview();
+const binding=document.createElement('div');binding.id='review-binding';binding.className='review-binding';binding.hidden=true;$('findings').before(binding);
 type Quote = {kind:'deploy'|'assess'; account:`0x${string}`; contract:string; snapshot:string; code:string; balance:bigint; consensusTarget:string; at:number;route:'wallet'|'session';sessionReview?:SessionReview};
 let quote: Quote | null = null;
 const snapshot = () => $<HTMLTextAreaElement>('snapshot').value;
@@ -40,11 +43,31 @@ const source = async () => {const r = await fetch(asset('contracts/agent_sla.py'
 const digest = async (value: string) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value))),b=>b.toString(16).padStart(2,'0')).join('');
 function message(value: string, error=false) { $('message').textContent=value; $('message').classList.toggle('error',error);feedback.textContent=value;feedback.classList.toggle('error',error); }
 function invalidate() {quote=null; $<HTMLInputElement>('consent').checked=false; $('quote-summary').classList.add('hidden'); $('quote-empty').classList.remove('hidden'); $<HTMLButtonElement>('submit').disabled=true; $('submit').textContent='Prepare a transaction first';}
-function setInput(value: string) { $<HTMLTextAreaElement>('snapshot').value=value; invalidate(); $('case-status').textContent='Not validated'; $('byte-count').textContent=`${new TextEncoder().encode(value).length.toLocaleString()} / 16,000 bytes`; }
+function expireResults(reason: string) {
+  const hadResult=!!evidenceReview.current || $('findings').childElementCount>0;
+  evidenceReview.changed();evidence=null;binding.hidden=true;binding.replaceChildren();
+  if(hadResult){$('findings').replaceChildren();$('result-source').textContent='Outdated · Review again';$('result-context').textContent=reason;}
+}
+function setInput(value: string, preserveReview=false) {
+  if(!preserveReview)expireResults('The evidence was replaced. Validate the new draft or read a contract again.');
+  $<HTMLTextAreaElement>('snapshot').value=value;invalidate();$('case-status').textContent='Not validated';$('byte-count').textContent=`${new TextEncoder().encode(value).length.toLocaleString()} / 16,000 bytes`;
+}
+function renderBinding() {
+  const proof=evidenceReview.current;binding.replaceChildren();binding.hidden=!proof;if(!proof)return;
+  const title=document.createElement('strong');title.textContent=proof.origin==='synthetic_example'?'Example fingerprint · Not the current draft':`Evidence binding · Revision ${proof.revision}`;
+  const origins={local_preview:'Local preview',chain_snapshot:'On-chain snapshot',chain_result:'On-chain result',synthetic_example:'Fixed synthetic example'};
+  const detail=document.createElement('p');detail.textContent=`${proof.caseId} · ${origins[proof.origin]} · ${proof.observedAt}`;
+  const snapshotHash=document.createElement('code');snapshotHash.textContent=`Snapshot SHA-256: ${proof.snapshotSha256}`;
+  const note=document.createElement('p');note.textContent='Fingerprint of the exact reviewed snapshot text. It binds these findings to that snapshot; it does not authenticate the evidence.';
+  binding.append(title,detail,snapshotHash);
+  if(proof.contract){const contract=document.createElement('p');contract.textContent=`Verified source · chain ${proof.chainId} · ${proof.contract}`;const sourceHash=document.createElement('code');sourceHash.textContent=`Source SHA-256: ${proof.sourceSha256}`;binding.append(contract,sourceHash);}
+  binding.append(note);
+}
 function show(panel: string) {document.querySelectorAll('.panel').forEach(e=>e.classList.toggle('hidden',e.id!==panel));document.querySelectorAll<HTMLElement>('.tab').forEach(e=>e.classList.toggle('active',e.dataset.panel===panel));}
 document.querySelectorAll<HTMLElement>('.tab').forEach(e=>e.addEventListener('click',()=>show(e.dataset.panel!)));
 function render(findings: Finding[], provenance: string, context: string) {
   $('result-source').textContent=provenance; $('result-context').textContent=context; $('findings').replaceChildren();
+  renderBinding();
   for(const f of findings) {
     const card=document.createElement('article'); card.className=`finding ${f.status}`;
     const caption=document.createElement('p'); caption.className='micro'; caption.textContent=`${f.criterion_id} · ${labels[f.criterion_id]}`;
@@ -85,17 +108,24 @@ async function walletCheck() {
 }
 async function compatible(contract: `0x${string}`) {
   const local=await source(); const remote=await readClient.getContractCode(contract);
-  if(await digest(local)!==await digest(remote)) throw new Error('The deployed source does not match this workbench. Assessment stopped; check the original deployed contract.');
+  const sourceHash=await digest(local);
+  if(sourceHash!==await digest(remote)) throw new Error('The deployed source does not match this workbench. Assessment stopped; check the original deployed contract.');
+  return sourceHash;
 }
 async function read(contract: `0x${string}`) {
-  await checkNetwork();await compatible(contract);
+  const request=evidenceReview.begin();
+  await checkNetwork();const sourceSha256=await compatible(contract);
   const rawSnapshot=await readClient.readContract({address:contract,functionName:'get_snapshot',args:[]});
   if(typeof rawSnapshot!=='string') throw new Error('No valid evidence snapshot was returned.');
   const c=parseCase(rawSnapshot);
   const result=await readClient.readContract({address:contract,functionName:'get_result',args:[]});
-  setInput(rawSnapshot);$<HTMLInputElement>('contract').value=contract;
-  if(result===''){evidence={chainId:CHAIN.id,contract,snapshotSha256:await digest(rawSnapshot),observedAt:new Date().toISOString(),assessment:null};render(objectiveFindings(c),'On-chain evidence · Not assessed',`${c.case_id} · Contract loaded. C1/C2 are local checks; assess has not run.`);}
-  else{const parsed=parseResult(result,c);evidence={chainId:CHAIN.id,contract,explorer:contractUrl(contract),snapshotSha256:await digest(rawSnapshot),observedAt:new Date().toISOString(),assessment:parsed};render(parsed.findings,'On-chain result',`${c.case_id} · ${short(contract)} · Assessment covers supplied evidence only.`);}
+  const parsed=result===''?null:parseResult(result,c);
+  const proof={origin:parsed?'chain_result' as const:'chain_snapshot' as const,caseId:c.case_id,snapshotSha256:await digest(rawSnapshot),sourceSha256,observedAt:new Date().toISOString(),chainId:CHAIN.id,contract};
+  if(!evidenceReview.accept(request,proof))throw new Error('Read discarded because the evidence or contract changed while it was loading. Your current draft was kept. Read again when ready.');
+  setInput(rawSnapshot,true);$('case-status').textContent='Schema valid';$<HTMLInputElement>('contract').value=contract;
+  evidence={chainId:CHAIN.id,contract,explorer:contractUrl(contract),snapshotSha256:proof.snapshotSha256,sourceSha256,observedAt:proof.observedAt,assessment:parsed};
+  if(!parsed)render(objectiveFindings(c),'On-chain evidence · Not assessed',`${c.case_id} · Contract loaded. C1/C2 are local checks; assess has not run.`);
+  else render(parsed.findings,'On-chain result',`${c.case_id} · ${short(contract)} · Assessment covers supplied evidence only.`);
   message('Results loaded. Export the work record from Transaction History.');
 }
 async function prepareQuote(kind: 'deploy'|'assess') {
@@ -162,9 +192,9 @@ async function track(value: string) {
 }
 function download(name:string,value:string){const url=URL.createObjectURL(new Blob([value],{type:'application/json;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 function bind(id:string,fn:()=>Promise<void>|void){$(id).addEventListener('click',()=>run(fn,$(id) instanceof HTMLButtonElement?$(id) as HTMLButtonElement:undefined));}
-bind('sample',async()=>{const r=await fetch(asset('fixtures/case.json'));if(!r.ok)throw new Error('Could not load the case.');setInput(json(await r.json()));message('Synthetic case loaded. Its measurements are invented examples, not real website tests.');});
-bind('validate',()=>{const c=parseCase(snapshot());$('case-status').textContent='Schema valid';render(objectiveFindings(c),'Local deterministic preview',`${c.case_id} · C3/C4 have not been assessed. A valid schema does not authenticate evidence.`);message('Evidence schema valid. C1/C2 preview ready.');});
-bind('show-example',async()=>{const [a,b]=await Promise.all([fetch(asset('fixtures/case.json')),fetch(asset('fixtures/demo-result.json'))]);const c=parseCase(await a.text());const demo=await b.json();const result=parseResult(json(demo.assessment),c);render(result.findings,'Synthetic example · Fixed mock response','Historical local SDK test output; not an assessment of the current input or an on-chain result.');message('Showing the synthetic example.');});
+bind('sample',async()=>{const request=evidenceReview.begin();const r=await fetch(asset('fixtures/case.json'));if(!r.ok)throw new Error('Could not load the case.');const raw=json(await r.json());parseCase(raw);if(!evidenceReview.isCurrent(request))throw new Error('Example loading was discarded because the draft changed. Your draft was kept.');setInput(raw);message('Synthetic case loaded. Its measurements are invented examples, not real website tests.');});
+bind('validate',async()=>{const request=evidenceReview.begin(),raw=snapshot(),c=parseCase(raw);if(!evidenceReview.accept(request,{origin:'local_preview',caseId:c.case_id,snapshotSha256:await digest(raw),observedAt:new Date().toISOString()}))throw new Error('The draft changed during validation. Validate it again.');evidence=null;$('case-status').textContent='Schema valid';render(objectiveFindings(c),'Local deterministic preview',`${c.case_id} · C3/C4 have not been assessed. A valid schema does not authenticate evidence.`);message('Evidence schema valid. C1/C2 preview ready.');});
+bind('show-example',async()=>{const request=evidenceReview.begin();const [a,b]=await Promise.all([fetch(asset('fixtures/case.json')),fetch(asset('fixtures/demo-result.json'))]);if(!a.ok||!b.ok)throw new Error('Could not load the synthetic example.');const raw=await a.text(),c=parseCase(raw),demo=await b.json(),result=parseResult(json(demo.assessment),c);if(!evidenceReview.accept(request,{origin:'synthetic_example',caseId:c.case_id,snapshotSha256:await digest(raw),observedAt:new Date().toISOString()}))throw new Error('Example loading was discarded because the draft changed.');evidence=null;render(result.findings,'Synthetic example · Fixed mock response','Historical local SDK test output; not an assessment of the current input or an on-chain result.');message('Showing the synthetic example.');});
 bind('save-input',()=>{const c=parseCase(snapshot());download('sla-evidence.json',json(c));});
 bind('connect',async()=>{invalidate();if(writeRoute==='session')throw new Error('A temporary test account is active. End it before connecting an external wallet.');if(!window.ethereum)throw new Error('No wallet extension detected. Open this app in Chrome with your wallet installed.');const list=await window.ethereum.request({method:'eth_requestAccounts'}) as string[];if(!list.length)throw new Error('No wallet account was authorized.');account=address(list[0]);await switchNetwork(window.ethereum);await walletCheck();$('connect').textContent=short(account);message('Wallet connected to Studionet. No transaction was sent.');});
 bind('start-session',async()=>{invalidate();const a=await studioSession.start($<HTMLInputElement>('session-consent').checked);account=a;writeRoute='session';$('connect').textContent=`Test ${short(a)}`;$('session-status').textContent=`Temporary test account ${a}. Use this account for both deploy and assess. Signing access is lost on reload.`;$<HTMLButtonElement>('end-session').disabled=false;message('Temporary account created. No transaction has been signed or sent.');});
@@ -172,14 +202,14 @@ bind('end-session',()=>{invalidate();studioSession.end();writeRoute='wallet';acc
 bind('check-network',async()=>{const n=await checkNetwork();$('network-state').textContent=`Verified chain ${n.chainId} · ${n.rpc}`;message('RPC chain ID verified. Contract deployment compatibility has not been verified.');});
 bind('read',()=>read(address($<HTMLInputElement>('contract').value.trim())));
 const readVerified=document.createElement('button');readVerified.id='read-verified';readVerified.textContent='Read on-chain example ↗';$('check-network').parentElement!.append(readVerified);
-bind('read-verified',()=>{const contract=address('0x12de9d0F0CEFC3697e76656A3b520c302e17faE9');$<HTMLInputElement>('contract').value=contract;invalidate();return read(contract);});
+bind('read-verified',()=>{const contract=address('0x12de9d0F0CEFC3697e76656A3b520c302e17faE9');$<HTMLInputElement>('contract').value=contract;invalidate();expireResults('The read target changed. Read this contract to bind a new result.');return read(contract);});
 bind('quote-deploy',()=>prepareQuote('deploy'));bind('quote-assess',()=>prepareQuote('assess'));bind('submit',submit);
 bind('track',()=>track($<HTMLInputElement>('txid').value.trim()));
-bind('export',()=>{download('agent-sla-work-record.json',json({app:'agent-sla-workbench',version:'0.1.6',generatedAt:new Date().toISOString(),transactions:records,chainRead:evidence,note:'RPC observations and local records; not a Portal acceptance or reward receipt. No input evidence text is included.'}));message('Work record exported.');});
-$('snapshot').addEventListener('input',()=>{invalidate();$('case-status').textContent='Not validated';$('byte-count').textContent=`${new TextEncoder().encode(snapshot()).length.toLocaleString()} / 16,000 bytes`;});
-for(const id of ['contract'])$(id).addEventListener('input',invalidate);
+bind('export',()=>{download('agent-sla-work-record.json',json({app:'agent-sla-workbench',version:'0.1.7',generatedAt:new Date().toISOString(),transactions:records,chainRead:evidence,reviewProvenance:evidenceReview.exportMetadata(),note:'RPC observations and local records; not a Portal acceptance or reward receipt. Current is null after an edit; history contains fingerprints only. No input evidence text is included.'}));message('Work record exported.');});
+$('snapshot').addEventListener('input',()=>{invalidate();expireResults('Evidence changed. Previous findings were cleared; validate this draft or read a contract again.');$('case-status').textContent='Not validated';$('byte-count').textContent=`${new TextEncoder().encode(snapshot()).length.toLocaleString()} / 16,000 bytes`;});
+for(const id of ['contract'])$(id).addEventListener('input',()=>{invalidate();expireResults('The contract target changed. Read the selected contract to bind new findings.');});
 $('consent').addEventListener('change',()=>{$<HTMLButtonElement>('submit').disabled=!quote||!$<HTMLInputElement>('consent').checked;});
-$('import').addEventListener('change',()=>run(async()=>{const f=$<HTMLInputElement>('import').files?.[0];if(!f)return;if(f.size>16000)throw new Error('The file exceeds 16,000 bytes.');const raw=await f.text();parseCase(raw);setInput(raw);message('Evidence imported and kept only in this page memory.');}));
+$('import').addEventListener('change',()=>run(async()=>{const request=evidenceReview.begin();const f=$<HTMLInputElement>('import').files?.[0];if(!f)return;if(f.size>16000)throw new Error('The file exceeds 16,000 bytes.');const raw=await f.text();parseCase(raw);if(!evidenceReview.isCurrent(request))throw new Error('Import discarded because the draft changed while the file was loading.');setInput(raw);message('Evidence imported and kept only in this page memory.');}));
 const provider=window.ethereum as Provider & {on?:(event:string,fn:()=>void)=>void};
 for(const event of ['accountsChanged','chainChanged'])provider?.on?.(event,()=>{if(writeRoute==='session')return;account=undefined;invalidate();$('connect').textContent='Reconnect wallet';message('The wallet network or account changed. Reconnect to continue.');});
 renderRecords();
