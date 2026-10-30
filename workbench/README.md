@@ -2,7 +2,7 @@
 
 Browser application for reviewing synthetic website-delivery evidence against a fixed SLA rubric. It validates JSON, previews deterministic C1/C2 checks, verifies deployed source, runs an Intelligent Contract through GenLayer consensus, tracks finality and reads the C1–C4 findings.
 
-**Revision 0.1.6.** The application interface, validation errors, transaction status messages, and account prompts are fully English. This copy update preserves the v0.1.5 contract, SDK dependencies, signing flow, and safety guards. The original Projects submission was accepted on 2026-10-30; the historical live evidence below records v0.1.5, not a new v0.1.6 write run.
+**Revision 0.1.7.** Assessment views now bind to exact evidence fingerprints and page revisions. Editing evidence or a contract target clears outdated findings; late asynchronous reads cannot overwrite an edited draft. Exported records distinguish current provenance from historical fingerprints. See [the evidence-binding verification guide](docs/EVIDENCE-BINDING.md). The contract, SDK dependencies and signing safeguards are preserved. The original Projects submission was accepted on 2026-10-30; the historical live evidence below records v0.1.5, not a new v0.1.7 write run.
 
 ## Run and reproduce
 
@@ -42,7 +42,7 @@ The UI is English throughout, including validation and wallet feedback. Imported
 
 `tests/studio-session.test.mjs` executes the real pinned SDK against a fake account and intercepted RPC. Fake signature bytes are intentionally invalid outside that test. It decodes the resulting deployment and assess payloads to verify source, snapshot, function, sender, dispatcher and zero value. It also covers account lifetime, ABI/network drift, gas price, missing consensus events, pending/wrong/failed receipts and duplicate/expired approvals. No private key is generated and no call reaches the live network.
 
-The other source tests cover evidence validation and receipt handling. All 34 source tests and both production builds passed. The fake-account tests and the live browser verification below are separate evidence.
+The other source tests cover evidence validation, receipt handling and evidence-bound views. The v0.1.7 source suite has 44 tests, including ten new provenance tests. All 44 source tests and the Pages production build passed locally. The fake-account tests and the historical live browser verification below are separate evidence.
 
 ## Verified in-app browser writes — 2026-10-30 (UTC+8)
 
