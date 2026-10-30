@@ -77,8 +77,8 @@ async function deployed(h) {await h.session.start(true);const q=await h.session.
 
 test('session creation is explicit, lazy, memory-only, and checks chain/ABI before account factory',async()=>{
   const {state,session}=harness();assert.equal(state.creates,0);
-  await assert.rejects(session.start(false),/先确认/);assert.equal(state.creates,0);
-  state.chain='0x1';await assert.rejects(session.start(true),/网络身份/);assert.equal(state.creates,0);
+  await assert.rejects(session.start(false),/Confirm temporary-account/);assert.equal(state.creates,0);
+  state.chain='0x1';await assert.rejects(session.start(true),/network identity/);assert.equal(state.creates,0);
   state.chain='0xf22f';state.abi=[];await assert.rejects(session.start(true),/ABI/);assert.equal(state.creates,0);
   state.abi=expectedAbi;assert.equal(await session.start(true),ACCOUNT);await session.start(true);assert.equal(state.creates,1);
   session.end();assert.equal(session.address,undefined);assert.equal(state.signed.length,0);
@@ -97,7 +97,7 @@ test('actual SDK completes mocked zero-dispatcher deploy then assess with exact 
 });
 test('external browser-wallet zero-address protection stays intact',async()=>{
   const h=harness();let calls=0;
-  await assert.rejects(makeWriter(ACCOUNT,{request:async()=>{calls++;throw new Error('should not reach wallet');}}),/停止向浏览器钱包/);
+  await assert.rejects(makeWriter(ACCOUNT,{request:async()=>{calls++;throw new Error('should not reach wallet');}}),/External-wallet signing is blocked/);
   assert.equal(calls,0);assert.equal(h.state.signed.length,0);
 });
 test('ABI ambiguity and v6 ABI changes are rejected',()=>{
@@ -113,7 +113,7 @@ test('changed chain, dispatcher and ABI after review never reach signing',async(
 test('late configuration drift during SDK gas estimation is rechecked before signing',async()=>{
   const h=harness();await h.session.start(true);const q=await h.session.prepare(deploy);
   h.state.mutateBeforeSign=()=>{h.state.target='0x'+'2'.repeat(40);};
-  await assert.rejects(h.session.submit(q,true),/派发目标/);assert.equal(h.state.signed.length,0);
+  await assert.rejects(h.session.submit(q,true),/dispatcher changed/);assert.equal(h.state.signed.length,0);
 });
 test('nonzero SDK gas price and changed preflight gas price fail closed',async()=>{
   for(const field of ['sdkGas','gas']){
@@ -123,17 +123,17 @@ test('nonzero SDK gas price and changed preflight gas price fail closed',async()
 });
 test('review requires confirmation, cannot be forged or reused, and expires',async()=>{
   const h=harness();await h.session.start(true);const q=await h.session.prepare(deploy);
-  await assert.rejects(h.session.submit(q,false),/明确确认/);
-  await assert.rejects(h.session.submit({...q},true),/复核已使用/);
-  h.state.now+=300001;await assert.rejects(h.session.submit(q,true),/失效/);
-  await assert.rejects(h.session.submit(q,true),/复核已使用/);assert.equal(h.state.signed.length,0);
+  await assert.rejects(h.session.submit(q,false),/Explicitly confirm/);
+  await assert.rejects(h.session.submit({...q},true),/review was already used/);
+  h.state.now+=300001;await assert.rejects(h.session.submit(q,true),/expired/);
+  await assert.rejects(h.session.submit(q,true),/review was already used/);assert.equal(h.state.signed.length,0);
 });
 test('duplicate concurrent submit signs once and old account review cannot sign',async()=>{
   const h=harness();await h.session.start(true);const q=await h.session.prepare(deploy);
-  const first=h.session.submit(q,true);await assert.rejects(h.session.submit(q,true),/复核已使用/);await first;
+  const first=h.session.submit(q,true);await assert.rejects(h.session.submit(q,true),/review was already used/);await first;
   assert.equal(h.state.signed.length,1);
   const h2=harness();await h2.session.start(true);const q2=await h2.session.prepare(deploy);h2.session.end();await h2.session.start(true);
-  await assert.rejects(h2.session.submit(q2,true),/失效/);assert.equal(h2.state.signed.length,0);
+  await assert.rejects(h2.session.submit(q2,true),/expired/);assert.equal(h2.state.signed.length,0);
 });
 test('pending, wrong sender/type and failed deployment cannot authorize assess',async()=>{
   for(const mutate of [r=>r.status='PENDING',r=>r.sender=CONTRACT,r=>r.type=0,r=>r.consensus_data.leader_receipt[0].execution_result='ERROR']) {
@@ -142,21 +142,21 @@ test('pending, wrong sender/type and failed deployment cannot authorize assess',
   }
 });
 test('assess rejects unrelated owner and changed source, snapshot or completed result',async()=>{
-  const h=harness();await h.session.start(true);await assert.rejects(h.session.prepare(assess),/本页临时账户已确认部署/);
-  for(const [mutate,reason] of [[s=>s.code+='\n',/源码校验/],[s=>s.snapshot+=' ',/证据包与复核/],[s=>s.result='already assessed',/已有结果/]]) {
+  const h=harness();await h.session.start(true);await assert.rejects(h.session.prepare(assess),/confirmed deployment from this page session/);
+  for(const [mutate,reason] of [[s=>s.code+='\n',/source verification/],[s=>s.snapshot+=' ',/snapshot does not match/],[s=>s.result='already assessed',/already has a result/]]) {
     const h=harness();await deployed(h);mutate(h.state);await assert.rejects(h.session.prepare(assess),reason);assert.equal(h.state.signed.length,1);
   }
 });
 test('source edits and malformed evidence are rejected before signer',async()=>{
   const h=harness();await h.session.start(true);
-  await assert.rejects(h.session.prepare({...deploy,code:code+'\n'}),/源码/);
+  await assert.rejects(h.session.prepare({...deploy,code:code+'\n'}),/source/);
   await assert.rejects(h.session.prepare({...deploy,snapshot:'{}'}));assert.equal(h.state.signed.length,0);
 });
 test('missing consensus event is ambiguous, never success; subsequent signing is blocked',async()=>{
   const h=harness();await h.session.start(true);const q=await h.session.prepare(deploy);h.state.omitEvent=true;
   await assert.rejects(h.session.submit(q,true),/no NewTransaction or CreatedTransaction/);
-  assert.equal(h.session.uncertain,true);await assert.rejects(h.session.prepare(deploy),/广播状态未知/);
-  h.session.end();await assert.rejects(h.session.start(true),/广播状态未知/);assert.equal(h.state.signed.length,1);
+  assert.equal(h.session.uncertain,true);await assert.rejects(h.session.prepare(deploy),/broadcast state is unknown/);
+  h.session.end();await assert.rejects(h.session.start(true),/Broadcast state unknown/);assert.equal(h.state.signed.length,1);
 });
 test('SDK ABI retry cannot produce a second signature after ambiguous send',async()=>{
   const h=harness();await h.session.start(true);const q=await h.session.prepare(deploy);h.state.failBroadcast=true;
@@ -169,7 +169,7 @@ test('caller mutation during preparation cannot change the reviewed source or sn
   assert.ok(Object.isFrozen(q));assert.equal(h.state.signed.length,0);
 });
 test('assess rechecks the frozen snapshot and existing result at submission',async()=>{
-  for(const [mutate,reason] of [[s=>s.snapshot+=' ',/证据包与复核/],[s=>s.result='already assessed',/已有结果/]]) {
+  for(const [mutate,reason] of [[s=>s.snapshot+=' ',/snapshot does not match/],[s=>s.result='already assessed',/already has a result/]]) {
     const h=harness();await deployed(h);const q=await h.session.prepare(assess);mutate(h.state);
     await assert.rejects(h.session.submit(q,true),reason);assert.equal(h.state.signed.length,1);
   }

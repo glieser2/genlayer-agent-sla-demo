@@ -24,11 +24,11 @@ try {
   assert.equal(await page.locator('.brand').getAttribute('href'),base);
   await page.locator('#sample').click();await page.waitForFunction(()=>document.getElementById('snapshot').value.includes('SYNTHETIC-WEBSITE-001'));
   await page.locator('#validate').click();await page.waitForFunction(()=>document.querySelectorAll('.finding').length===2);
-  await page.locator('#show-example').click();await page.waitForFunction(()=>document.querySelectorAll('.finding').length===4);assert.match(await page.locator('#result-source').innerText(),/固定模拟响应/);
-  await page.getByRole('button',{name:'02　链上评估',exact:true}).click();
-  assert.equal(await page.getByRole('link',{name:'下载合约源码 ↓',exact:true}).getAttribute('href'),base+'contracts/agent_sla.py');
-  await page.locator('#read-verified').click();await page.waitForFunction(()=>document.getElementById('result-source').textContent==='链上读取'||document.getElementById('message').classList.contains('error'),{},{timeout:45000});
-  assert.equal(await page.locator('#result-source').innerText(),'链上读取',await page.locator('#message').innerText());assert.equal(await page.locator('.finding.met').count(),1);assert.equal(await page.locator('.finding.not_met').count(),3);assert.equal(await page.locator('#submit').isDisabled(),true);
+  await page.locator('#show-example').click();await page.waitForFunction(()=>document.querySelectorAll('.finding').length===4);assert.match(await page.locator('#result-source').innerText(),/Fixed mock response/);
+  await page.getByRole('button',{name:'02 On-chain Assessment',exact:true}).click();
+  assert.equal(await page.getByRole('link',{name:'Download contract source ↓',exact:true}).getAttribute('href'),base+'contracts/agent_sla.py');
+  await page.locator('#read-verified').click();await page.waitForFunction(()=>document.getElementById('result-source').textContent==='On-chain result'||document.getElementById('message').classList.contains('error'),{},{timeout:45000});
+  assert.equal(await page.locator('#result-source').innerText(),'On-chain result',await page.locator('#message').innerText());assert.equal(await page.locator('.finding.met').count(),1);assert.equal(await page.locator('.finding.not_met').count(),3);assert.equal(await page.locator('#submit').isDisabled(),true);
   assert.ok(!localRequests.some(p=>p.startsWith('/fixtures/')||p.startsWith('/contracts/')));assert.deepEqual(errors,[]);
   await page.setViewportSize({width:390,height:844});const size=await page.evaluate(()=>({viewport:innerWidth,scroll:document.documentElement.scrollWidth}));assert.ok(size.scroll<=size.viewport,JSON.stringify(size));
   const report={observedAt:new Date().toISOString(),version:'0.1.4',localProductionPreview:true,published:false,basePath:base,checks:['production assets load at repository subpath','brand and source link retain subpath','sample and fixed example fetch at subpath','actual contract source check and four findings render','mobile no horizontal overflow','no browser errors'],rpcMethods:methods,walletConnected:false,transactionsSent:0};

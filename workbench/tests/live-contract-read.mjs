@@ -13,9 +13,9 @@ await page.route('**/*',async route=>{
 try {
   await page.goto('http://127.0.0.1:5173');
   assert.equal(await page.evaluate(()=>Boolean(window.ethereum)),false);
-  await page.getByRole('button',{name:'02　链上评估',exact:true}).click();await page.locator('#read-verified').click();
-  await page.waitForFunction(()=>document.getElementById('result-source').textContent==='链上读取'||document.getElementById('message').classList.contains('error'),{},{timeout:45000});
-  assert.equal(await page.locator('#result-source').innerText(),'链上读取',await page.locator('#message').innerText());
+  await page.getByRole('button',{name:'02 On-chain Assessment',exact:true}).click();await page.locator('#read-verified').click();
+  await page.waitForFunction(()=>document.getElementById('result-source').textContent==='On-chain result'||document.getElementById('message').classList.contains('error'),{},{timeout:45000});
+  assert.equal(await page.locator('#result-source').innerText(),'On-chain result',await page.locator('#message').innerText());
   assert.equal(await page.locator('.finding.met').count(),1);assert.equal(await page.locator('.finding.not_met').count(),3);
   assert.match(await page.locator('#result-context').innerText(),/SYNTHETIC-WEBSITE-001/);
   assert.equal(await page.locator('#submit').isDisabled(),true);assert.deepEqual(errors,[]);

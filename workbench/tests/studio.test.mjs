@@ -15,7 +15,7 @@ test('a finalized transfer can never provide a contract address or deployment su
 });
 test('zero simulator configuration remains readable but is never sent to a browser wallet',()=>{
   const target=consensusTarget({address:'0x'+'0'.repeat(40),abi});
-  assert.throws(()=>assertBrowserWalletTarget(target),/停止向浏览器钱包请求签名/);
+  assert.throws(()=>assertBrowserWalletTarget(target),/External-wallet signing is blocked/);
   assert.doesNotThrow(()=>assertBrowserWalletTarget('0x'+'2'.repeat(40)));
 });
 test('read actual deployed contract from data and use first authoritative leader receipt',()=>{

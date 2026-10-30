@@ -35,10 +35,10 @@ await page.route('**/*',async route=>{
 try {
   await page.goto('http://127.0.0.1:5173');await page.locator('#sample').click();
   await page.waitForFunction(()=>document.getElementById('snapshot').value.includes('SYNTHETIC'));
-  await page.locator('#connect').click();await page.waitForFunction(()=>document.getElementById('message').textContent.includes('已连接 Studionet')||document.getElementById('message').classList.contains('error'));
-  assert.match(await page.locator('#message').innerText(),/已连接 Studionet/);
-  await page.getByRole('button',{name:'02　链上评估',exact:true}).click();
-  await page.locator('#quote-deploy').click();await page.waitForFunction(()=>document.getElementById('chain-feedback').textContent.includes('停止向浏览器钱包请求签名'));
+  await page.locator('#connect').click();await page.waitForFunction(()=>document.getElementById('message').textContent.includes('connected to Studionet')||document.getElementById('message').classList.contains('error'));
+  assert.match(await page.locator('#message').innerText(),/connected to Studionet/);
+  await page.getByRole('button',{name:'02 On-chain Assessment',exact:true}).click();
+  await page.locator('#quote-deploy').click();await page.waitForFunction(()=>document.getElementById('chain-feedback').textContent.includes('External-wallet signing is blocked'));
   assert.equal(await page.locator('#submit').isDisabled(),true);assert.equal((await page.evaluate(()=>window.__walletCalls)).filter(x=>x==='eth_sendTransaction').length,0);
   // Only this isolated fixture returns a nonzero dispatcher; it is not live network evidence.
   zeroTarget=false;
@@ -64,19 +64,19 @@ try {
   assert.deepEqual(errors,[]);
   await page.locator('#quote-deploy').click();await page.waitForFunction(()=>!document.getElementById('quote-summary').classList.contains('hidden'));
   await page.locator('#consent').check();zeroTarget=true;await page.locator('#submit').click();
-  await page.waitForFunction(()=>document.getElementById('chain-feedback').textContent.includes('停止向浏览器钱包请求签名'));
+  await page.waitForFunction(()=>document.getElementById('chain-feedback').textContent.includes('External-wallet signing is blocked'));
   assert.equal(await page.locator('#submit').isDisabled(),true);assert.equal((await page.evaluate(()=>window.__walletCalls)).filter(x=>x==='eth_sendTransaction').length,1);zeroTarget=false;
   await page.evaluate(()=>localStorage.setItem('agent-sla:transactions:v1',JSON.stringify([{hash:'0x'+'a'.repeat(64),kind:'deploy',chainId:61999,account:'0x'+'1'.repeat(40),contract:'',createdAt:'2026-10-28',outcome:'pending'}])));
-  await page.reload();await page.getByRole('button',{name:'03　交易记录',exact:true}).click();await page.getByRole('button',{name:'继续查询',exact:true}).click();
-  await page.waitForFunction(()=>document.getElementById('message').textContent.includes('不是预期合约操作'));
-  assert.match(await page.locator('.journal-row').innerText(),/非合约交易/);
+  await page.reload();await page.getByRole('button',{name:'03 Transaction History',exact:true}).click();await page.getByRole('button',{name:'Check status',exact:true}).click();
+  await page.waitForFunction(()=>document.getElementById('message').textContent.includes('not the expected contract operation'));
+  assert.match(await page.locator('.journal-row').innerText(),/Wrong transaction type/);
   assert.equal((await page.evaluate(()=>JSON.parse(localStorage.getItem('agent-sla:transactions:v1'))))[0].contract,'');
   genuinePending=true;
   await page.evaluate(()=>localStorage.setItem('agent-sla:transactions:v1',JSON.stringify([{hash:'0x'+'a'.repeat(64),kind:'deploy',chainId:61999,account:'0x'+'1'.repeat(40),contract:'',createdAt:'2026-10-28',outcome:'pending'}])));
   await page.reload();await page.locator('#sample').click();await page.waitForFunction(()=>document.getElementById('snapshot').value.includes('SYNTHETIC'));
-  await page.locator('#connect').click();await page.waitForFunction(()=>document.getElementById('message').textContent.includes('已连接 Studionet'));
-  await page.getByRole('button',{name:'02　链上评估',exact:true}).click();await page.locator('#quote-deploy').click();
-  await page.waitForFunction(()=>document.getElementById('chain-feedback').textContent.includes('仍有状态未确认'));
+  await page.locator('#connect').click();await page.waitForFunction(()=>document.getElementById('message').textContent.includes('connected to Studionet'));
+  await page.getByRole('button',{name:'02 On-chain Assessment',exact:true}).click();await page.locator('#quote-deploy').click();
+  await page.waitForFunction(()=>document.getElementById('chain-feedback').textContent.includes('has an unresolved transaction'));
   assert.equal(await page.locator('#submit').isDisabled(),true);assert.equal((await page.evaluate(()=>window.__walletCalls)).filter(x=>x==='eth_sendTransaction').length,0);
   console.log(JSON.stringify({ok:true,checks:['fake provider connection remains available for read-only work','zero dispatcher blocked before review with no signing request','review bound to chain 61999','stale pending transfer refreshed read-only before preparing deployment','explicit consent required','input edits invalidate review','wallet rejection prevents repeat and creates no success record','unsigned request targets mocked nonzero dispatcher with zero value','ABI/RLP payload decodes to reviewed contract source','dispatcher changing to zero after review invalidates review without another signing request','finalized transfer recorded as wrong_type, never as deployed','genuine pending contract still blocks new deployment without a signing request'],fakeWalletSigningRequests:1,realWalletRequests:0,liveRpcCalls:0,rpcMethodsIntercepted:methods},null,2));
 } catch(e) {console.log(JSON.stringify({message:await page.locator('#message').innerText(),walletCalls:await page.evaluate(()=>window.__walletCalls),methods,errors},null,2));throw e;} finally {await browser.close();}

@@ -13,11 +13,11 @@ await page.addInitScript(()=>{window.__signRequests=0;window.ethereum={on(){},as
 }};});
 try{
   await page.goto('http://127.0.0.1:5173');await page.locator('#sample').click();await page.waitForFunction(()=>document.getElementById('snapshot').value.includes('SYNTHETIC'));
-  await page.locator('#connect').click();await page.waitForFunction(()=>document.getElementById('message').textContent.includes('已连接 Studionet')||document.getElementById('message').classList.contains('error'));
-  assert.match(await page.locator('#message').innerText(),/已连接 Studionet/);
-  await page.getByRole('button',{name:'02　链上评估',exact:true}).click();await page.locator('#quote-deploy').click();
+  await page.locator('#connect').click();await page.waitForFunction(()=>document.getElementById('message').textContent.includes('connected to Studionet')||document.getElementById('message').classList.contains('error'));
+  assert.match(await page.locator('#message').innerText(),/connected to Studionet/);
+  await page.getByRole('button',{name:'02 On-chain Assessment',exact:true}).click();await page.locator('#quote-deploy').click();
   await page.waitForFunction(()=>!document.getElementById('quote-summary').classList.contains('hidden')||document.getElementById('chain-feedback').classList.contains('error'),{},{timeout:45000});
-  const feedback=await page.locator('#chain-feedback').innerText();assert.match(feedback,/停止向浏览器钱包请求签名/);
+  const feedback=await page.locator('#chain-feedback').innerText();assert.match(feedback,/External-wallet signing is blocked/);
   assert.equal(await page.locator('#quote-summary').evaluate(e=>e.classList.contains('hidden')),true);
   assert.equal(await page.locator('#submit').isDisabled(),true);assert.equal(await page.evaluate(()=>window.__signRequests),0);assert.deepEqual(errors,[]);
   console.log(JSON.stringify({ok:true,readOnly:true,realWalletConnected:false,signingRequests:0,liveBrowserRpcCheck:'zero dispatcher correctly blocked before wallet signing',chainId:61999,feedback,requestFailures:failures},null,2));
