@@ -1,0 +1,54 @@
+✔ accept the reviewed synthetic case; preview C1/C2 without pretending to assess C3/C4 (1.9798ms)
+✔ missing timestamps and revision mismatch yield insufficient evidence (1.2987ms)
+✔ deadline equality counts as on-time; all tests must pass (0.2132ms)
+✔ reject unknown top-level fields, duplicate IDs and irrelevant criteria (1.3235ms)
+✔ reject malformed report and non-integer / boolean timestamps (0.3661ms)
+✔ UTF-8 byte limit applies before parsing and matches the contract cap (0.3748ms)
+✔ Unicode text lengths use code points; whitespace-only evidence fails (1.3155ms)
+✔ recognize historical canned result only after validating case binding and references (0.3633ms)
+✔ reject forged citations, unrelated evidence and decisive results without evidence (0.3537ms)
+✔ reject duplicate criteria and contradictory deterministic results (0.2561ms)
+✔ transaction finality does not imply execution success (0.1205ms)
+✔ validate nonzero contract addresses and full transaction hashes (0.2339ms)
+✔ transaction journal handles corrupt storage and excludes foreign networks / unsafe records (0.5ms)
+✔ bind each accepted review to a source fingerprint and page revision (1.2707ms)
+✔ provenance uses the same Unicode code-point limit as validated case IDs (0.3531ms)
+✔ editing or replacing evidence clears the current proof and marks history non-current (0.2303ms)
+✔ an in-flight chain read cannot overwrite a draft edited during network work (0.5465ms)
+✔ switching targets, including switching away and back, invalidates the prior request (0.1088ms)
+✔ only the newest request can publish even when replies return out of order (0.1194ms)
+✔ consumed and forged tickets cannot publish a result (0.1026ms)
+✔ local previews and fixed examples cannot carry an on-chain origin (0.8792ms)
+✔ chain results require the pinned chain, nonzero address and both valid hashes (0.3177ms)
+✔ export is detached, bounded and contains no caller evidence text or key fields (0.4436ms)
+✔ session creation is explicit, lazy, memory-only, and checks chain/ABI before account factory (1.524ms)
+✔ actual SDK completes mocked zero-dispatcher deploy then assess with exact source, snapshot, sender and function (38.2593ms)
+✔ external browser-wallet zero-address protection stays intact (0.7224ms)
+✔ ABI ambiguity and v6 ABI changes are rejected (0.2269ms)
+✔ changed chain, dispatcher and ABI after review never reach signing (1.4285ms)
+✔ late configuration drift during SDK gas estimation is rechecked before signing (1.5396ms)
+✔ nonzero SDK gas price and changed preflight gas price fail closed (2.1488ms)
+✔ review requires confirmation, cannot be forged or reused, and expires (0.5271ms)
+✔ duplicate concurrent submit signs once and old account review cannot sign (2.7514ms)
+✔ pending, wrong sender/type and failed deployment cannot authorize assess (10.1736ms)
+✔ assess rejects unrelated owner and changed source, snapshot or completed result (8.444ms)
+✔ source edits and malformed evidence are rejected before signer (0.4804ms)
+✔ missing consensus event is ambiguous, never success; subsequent signing is blocked (1.6635ms)
+GenLayer RPC error (eth_sendRawTransaction): TEST ambiguous broadcast; invalid pointer
+✔ SDK ABI retry cannot produce a second signature after ambiguous send (1.6456ms)
+✔ caller mutation during preparation cannot change the reviewed source or snapshot (1.0631ms)
+✔ assess rechecks the frozen snapshot and existing result at submission (8.5626ms)
+✔ use the Studio runtime target, including its zero simulator dispatcher, not stale SDK metadata (1.1101ms)
+✔ a finalized transfer can never provide a contract address or deployment success (0.2039ms)
+✔ zero simulator configuration remains readable but is never sent to a browser wallet (0.5123ms)
+✔ read actual deployed contract from data and use first authoritative leader receipt (0.1326ms)
+✔ missing execution never defaults to success; failed calls stay failed (0.3825ms)
+ℹ tests 44
+ℹ suites 0
+ℹ pass 44
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 703.3607
+$ node --test tests/*.test.mjs

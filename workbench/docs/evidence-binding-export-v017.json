@@ -1,0 +1,34 @@
+{
+  "app": "agent-sla-workbench",
+  "version": "0.1.7",
+  "generatedAt": "2026-10-30T23:31:46.175Z",
+  "chainRead": null,
+  "reviewProvenance": {
+    "draftRevision": 5,
+    "current": null,
+    "history": [
+      {
+        "origin": "local_preview",
+        "caseId": "SYNTHETIC-WEBSITE-001",
+        "snapshotSha256": "e8e8746ec6383a112c369ac57ea8409c1298b39a0a8a950f50adceb6cfd47e71",
+        "observedAt": "2026-10-30T23:30:12.965Z",
+        "revision": 2,
+        "sequence": 2,
+        "current": false
+      },
+      {
+        "origin": "chain_result",
+        "caseId": "SYNTHETIC-WEBSITE-001",
+        "snapshotSha256": "5e7433a01618bfbc7ab213c1b9bc5ac12eb186e20d1fd957ddd92e83ebe3624a",
+        "observedAt": "2026-10-30T23:31:03.405Z",
+        "revision": 4,
+        "sequence": 4,
+        "chainId": 61999,
+        "contract": "0xc71FfDb03c187Cce264EB39832CFd0A6cF384460",
+        "sourceSha256": "9bab25a9f898d20ec6af13f0e34aa19d395998f973a592d379726e48304dd912",
+        "current": false
+      }
+    ]
+  },
+  "note": "Subset of an actual downloaded local v0.1.7 work record after editing. The unrelated historical transaction journal is omitted. No evidence body is included."
+}

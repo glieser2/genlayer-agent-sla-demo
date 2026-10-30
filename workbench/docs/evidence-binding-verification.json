@@ -1,0 +1,58 @@
+{
+  "version": "0.1.7",
+  "date_beijing": "2026-10-31",
+  "status": "local_review_candidate_not_published",
+  "accepted_baseline_commit": "e2a02e2625232039e80673b65a32033e2dbbccd2",
+  "previous_public_commit": "5c2e05304f8e90fdd68e28c25ddfe545cf31e5f4",
+  "source_tests": {
+    "passed": 44,
+    "failed": 0,
+    "new_provenance_tests": 10
+  },
+  "pages_build": "passed",
+  "browser_checks": [
+    "Load and validate synthetic case; show exact snapshot hash and local-preview origin.",
+    "Edit evidence to invalid JSON; zero findings, hidden binding and Outdated label.",
+    "Start a real read, edit draft while awaiting RPC; late read discarded, draft preserved.",
+    "Read existing Studionet deployment; four findings and exact snapshot/source fingerprints returned.",
+    "Export after edit; chainRead/current null, two historical fingerprints explicitly non-current."
+  ],
+  "live_read_contract": "0xc71FfDb03c187Cce264EB39832CFd0A6cF384460",
+  "observed_snapshot_sha256": "5e7433a01618bfbc7ab213c1b9bc5ac12eb186e20d1fd957ddd92e83ebe3624a",
+  "contract_source_sha256": "9bab25a9f898d20ec6af13f0e34aa19d395998f973a592d379726e48304dd912",
+  "new_live_deployments": 0,
+  "new_live_assess_calls": 0,
+  "temporary_accounts_created": 0,
+  "source_files": [
+    {
+      "path": "workbench/README.md",
+      "sha256": "e1abf2ce5b71521e6dff3b137b6eb31cfab671bc5c7fbdc58c9ae07bc3457394"
+    },
+    {
+      "path": "workbench/package.json",
+      "sha256": "7ec75fc19f6915c8f216904610820f84316bde0f0429d0c9b55ed0d551bd91ea"
+    },
+    {
+      "path": "workbench/src/main.ts",
+      "sha256": "6c3e36566e8cd1487caab757d201eb38046a43774a9131f68c1dec9fb418ecb9"
+    },
+    {
+      "path": "workbench/src/evidence-review.ts",
+      "sha256": "6fb079336604bc20efce028fea83881f237ed79ee1ede173dd0103c6c60ee6fb"
+    },
+    {
+      "path": "workbench/src/action-feedback.css",
+      "sha256": "5699e87bd7fe8787cfdb0be45f6fbfef9c6599eb62b6caf822e0d965ccab45de"
+    },
+    {
+      "path": "workbench/tests/evidence-review.test.mjs",
+      "sha256": "4e7c979db2f5163428f3de99bd3d4d6d7a3a6e9ddc551825742c89288e6ffc29"
+    },
+    {
+      "path": "workbench/docs/EVIDENCE-BINDING.md",
+      "sha256": "9f238030a66a436f4b726c30ceca186009894a3d1ee2952bdd0ec9e83aabca22"
+    }
+  ],
+  "unchanged": "Contract, SDK dependencies, network/dispatcher implementation, session signing and original source tests remain unchanged.",
+  "limitations": "Fingerprints bind observed bytes, not evidence authenticity. No new deployment/assess verification. Milestone acceptance is at reviewer discretion. Source and live release await user publication review."
+}
