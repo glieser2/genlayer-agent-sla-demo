@@ -19,73 +19,73 @@ export function createStudioSession(deps:{rpc?:Rpc;newAccount?:()=>LocalAccount;
   const reviews=new WeakMap<SessionReview,number>();
   const sent:Array<{hash:`0x${string}`;kind:'deploy'|'assess';contract?:string;outcome:string}>=[];
   async function preflight(expected?:string) {
-    if(studionet.id!==61999||studionet.rpcUrls.default.http[0]!==STUDIO_RPC)throw new Error('测试账户仅允许固定的官方 Studionet RPC。');
-    if(Number(await rpc('eth_chainId',[]))!==61999)throw new Error('测试账户网络身份不匹配，已停止。');
+    if(studionet.id!==61999||studionet.rpcUrls.default.http[0]!==STUDIO_RPC)throw new Error('Test accounts require the fixed official Studionet RPC.');
+    if(Number(await rpc('eth_chainId',[]))!==61999)throw new Error('Test account network identity mismatch. Operation stopped.');
     const target=consensusTarget(await rpc('sim_getConsensusContract',['ConsensusMain']));
-    if(expected&&target.toLowerCase()!==expected.toLowerCase())throw new Error('Studio 派发目标已变化，请重新准备。');
-    if(BigInt(String(await rpc('eth_gasPrice',[])))!==0n)throw new Error('临时测试账户仅支持零 gasPrice 的 Studionet，本次已停止。');
+    if(expected&&target.toLowerCase()!==expected.toLowerCase())throw new Error('The Studio dispatcher changed. Prepare again.');
+    if(BigInt(String(await rpc('eth_gasPrice',[])))!==0n)throw new Error('Temporary accounts require zero gasPrice on Studionet. Operation stopped.');
     return target;
   }
   function current(a:LocalAccount, g:number) {
-    if(account!==a||generation!==g)throw new Error('临时账户已结束或改变，请重新准备。');
+    if(account!==a||generation!==g)throw new Error('The temporary account ended or changed. Prepare again.');
   }
   async function refresh(a:LocalAccount) {
     for(const entry of sent.filter(e=>['pending','unknown'].includes(e.outcome))) {
       const tx=normalizeStudioTransaction(await rpc('gen_getStudioTransactionByHash',[entry.hash]));
-      if(tx.sender?.toLowerCase()!==a.address.toLowerCase()||tx.transactionType!==(entry.kind==='deploy'?1:2)||String(tx.value)!=='0')throw new Error('测试交易回执的发送者、类型或金额不符。');
+      if(tx.sender?.toLowerCase()!==a.address.toLowerCase()||tx.transactionType!==(entry.kind==='deploy'?1:2)||String(tx.value)!=='0')throw new Error('Test transaction receipt sender, type, or value mismatch.');
       entry.outcome=receiptOutcome(tx);entry.contract=tx.contract;
     }
-    if(sent.some(e=>['pending','unknown'].includes(e.outcome)))throw new Error('既有测试交易尚未确认，请继续查询原 ID。');
+    if(sent.some(e=>['pending','unknown'].includes(e.outcome)))throw new Error('An existing test transaction is unresolved. Keep querying its original ID.');
   }
   async function readyForAssess(a:LocalAccount, review:SessionOperation) {
     await refresh(a);
     const contract=address(review.contract);
-    if(!sent.some(e=>e.kind==='deploy'&&e.outcome==='success'&&e.contract?.toLowerCase()===contract.toLowerCase()))throw new Error('只能评估本页临时账户已确认部署的合约；旧合约仍可只读查询。');
+    if(!sent.some(e=>e.kind==='deploy'&&e.outcome==='success'&&e.contract?.toLowerCase()===contract.toLowerCase()))throw new Error('Assessment requires a confirmed deployment from this page session. Other contracts remain read-only.');
     const client=createClient({chain:studionet,endpoint:STUDIO_RPC});
-    if(await digest(await client.getContractCode(contract))!==REVIEWED_SOURCE_SHA256)throw new Error('链上源码校验失败。');
+    if(await digest(await client.getContractCode(contract))!==REVIEWED_SOURCE_SHA256)throw new Error('Deployed source verification failed.');
     const raw=await client.readContract({address:contract,functionName:'get_snapshot',args:[]});
-    if(raw!==review.snapshot)throw new Error('链上证据包与复核不一致。');
-    if(await client.readContract({address:contract,functionName:'get_result',args:[]})!=='')throw new Error('此合约已有结果，不能重复 assess。');
+    if(raw!==review.snapshot)throw new Error('The on-chain snapshot does not match the review.');
+    if(await client.readContract({address:contract,functionName:'get_result',args:[]})!=='')throw new Error('This contract already has a result. assess cannot run again.');
   }
   return {
     get address(){return account?.address;},
     get uncertain(){return uncertain;},
     async start(confirmed:boolean) {
-      if(!confirmed)throw new Error('请先确认仅在本页使用临时测试账户。');
-      if(busy)throw new Error('上一项测试账户操作仍在处理中。');
+      if(!confirmed)throw new Error('Confirm temporary-account use in this page first.');
+      if(busy)throw new Error('A test-account operation is still running.');
       if(account)return account.address;
-      if(uncertain)throw new Error('广播状态未知，不能在本页创建新账户重试。');
+      if(uncertain)throw new Error('Broadcast state unknown. A new account cannot be created to retry in this page.');
       busy=true;const g=generation;
-      try{await preflight();if(g!==generation)throw new Error('账户创建已取消。');account=newAccount();sent.length=0;return account.address;}
+      try{await preflight();if(g!==generation)throw new Error('Account creation canceled.');account=newAccount();sent.length=0;return account.address;}
       finally{busy=false;}
     },
     end(){generation++;account=null;},
     async prepare(input:SessionOperation):Promise<SessionReview> {
       const op=Object.freeze({...input});
-      if(busy||uncertain)throw new Error('已有操作处理中或广播状态未知，请先核对原交易，勿重复提交。');
-      const a=account,g=generation;if(!a)throw new Error('请先创建本页临时测试账户。');
+      if(busy||uncertain)throw new Error('An operation is running or its broadcast state is unknown. Check the original transaction before proceeding.');
+      const a=account,g=generation;if(!a)throw new Error('Create a temporary account in this page first.');
       parseCase(op.snapshot);
-      if(await digest(op.code)!==REVIEWED_SOURCE_SHA256)throw new Error('源码不属于已审核的 Agent SLA 合约，已停止。');
+      if(await digest(op.code)!==REVIEWED_SOURCE_SHA256)throw new Error('This source is not the reviewed Agent SLA contract. Operation stopped.');
       if(op.kind==='assess')await readyForAssess(a,op);
-      else {if(op.kind!=='deploy'||op.contract!=='')throw new Error('测试操作无效。');await refresh(a);}
+      else {if(op.kind!=='deploy'||op.contract!=='')throw new Error('Invalid test operation.');await refresh(a);}
       const target=await preflight();current(a,g);
       const review=Object.freeze({...op,account:a.address,target,at:now()});reviews.set(review,generation);return review;
     },
     async submit(review:SessionReview, confirmed:boolean) {
-      if(!confirmed)throw new Error('需要明确确认这一次测试操作。');
-      if(busy||uncertain||!reviews.has(review))throw new Error('复核已使用或操作状态未知，请勿重复提交。');
+      if(!confirmed)throw new Error('Explicitly confirm this test operation.');
+      if(busy||uncertain||!reviews.has(review))throw new Error('The review was already used or the operation state is unknown. Do not resubmit.');
       // Consume before any await, including failures. No second signature on SDK ABI fallback.
       const reviewedGeneration=reviews.get(review);reviews.delete(review);busy=true;const a=account,g=generation;let signed=false;
       try {
-        if(!a||a.address!==review.account||reviewedGeneration!==generation||now()-review.at>300000)throw new Error('账户或复核已失效，请重新准备。');
+        if(!a||a.address!==review.account||reviewedGeneration!==generation||now()-review.at>300000)throw new Error('The account or review expired. Prepare again.');
         const target=await preflight(review.target);current(a,g);await refresh(a);
         if(review.kind==='assess')await readyForAssess(a,review);
         const guardedAccount={...a,signTransaction:async (...args:Parameters<NonNullable<LocalAccount['signTransaction']>>) => {
-          if(signed)throw new Error('同一次复核只允许签名一次，禁止 ABI 回退重发。');
+          if(signed)throw new Error('Only one signature is allowed per review. ABI fallback cannot sign again.');
           const tx=args[0];current(a,g);
-          if(tx.chainId!==61999||tx.to?.toLowerCase()!==target.toLowerCase()||BigInt(tx.value??0)!==0n||BigInt(tx.gasPrice??-1)!==0n)throw new Error('测试交易的网络、派发地址、金额或费用不匹配，已停止。');
+          if(tx.chainId!==61999||tx.to?.toLowerCase()!==target.toLowerCase()||BigInt(tx.value??0)!==0n||BigInt(tx.gasPrice??-1)!==0n)throw new Error('Test transaction network, dispatcher, value, or fee mismatch. Operation stopped.');
           await preflight(target);current(a,g);
-          if(now()-review.at>300000)throw new Error('签名前复核已过期。');
+          if(now()-review.at>300000)throw new Error('The review expired before signing.');
           signed=true;return a.signTransaction!(...args);
         }} as LocalAccount;
         const chain={...studionet,consensusMainContract:{...studionet.consensusMainContract!,address:target}};

@@ -2,7 +2,7 @@ import {createClient} from 'genlayer-js';
 import {studionet} from 'genlayer-js/chains';
 import {studioRpc,consensusTarget,assertBrowserWalletTarget} from './studio.ts';
 export const CHAIN = studionet;
-export const NETWORK_NAME = 'Studionet 开发网';
+export const NETWORK_NAME = 'Studionet development network';
 export const EXPLORER = 'https://explorer-studio.genlayer.com';
 export type Provider = NonNullable<Parameters<typeof createClient>[0]>['provider'];
 export const readClient = createClient({chain: CHAIN});
@@ -24,7 +24,7 @@ export async function switchNetwork(provider: NonNullable<Provider>) {
 }
 export async function checkNetwork() {
   const actual = Number(await readClient.getChainId());
-  if (actual !== CHAIN.id || actual !== 61999) throw new Error('RPC 网络身份不匹配，已停止操作。');
+  if (actual !== CHAIN.id || actual !== 61999) throw new Error('RPC network identity mismatch. Operation stopped.');
   return {chainId: actual, rpc: CHAIN.rpcUrls.default.http[0]};
 }
 export function contractUrl(value: string) { return `${EXPLORER}/address/${value}`; }

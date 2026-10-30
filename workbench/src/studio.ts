@@ -7,18 +7,18 @@ export async function studioRpc(method:'sim_getConsensusContract'|'gen_getStudio
 }
 const object=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v);
 export function consensusTarget(v:unknown):`0x${string}` {
-  if(!object(v)||typeof v.address!=='string'||!/^0x[0-9a-fA-F]{40}$/.test(v.address)||!Array.isArray(v.abi))throw new Error('Studio 共识配置无效，已停止签名。');
+  if(!object(v)||typeof v.address!=='string'||!/^0x[0-9a-fA-F]{40}$/.test(v.address)||!Array.isArray(v.abi))throw new Error('Invalid Studio consensus configuration. Signing stopped.');
   const candidates=v.abi.filter(f=>object(f)&&f.type==='function'&&f.name==='addTransaction');
   const ok=candidates.length===1&&candidates.every(f=>object(f)&&Array.isArray(f.inputs)&&f.inputs.map(i=>object(i)?i.type:'').join(',')==='address,address,uint256,uint256,bytes');
-  if(!ok)throw new Error('Studio 当前交易 ABI 与固定 SDK 不匹配，已停止签名。');
+  if(!ok)throw new Error('The current Studio transaction ABI does not match the pinned SDK. Signing stopped.');
   // Zero is the official Studio simulator's dispatch address; only chain 61999.
   return v.address as `0x${string}`;
 }
 export function assertBrowserWalletTarget(target:`0x${string}`) {
-  if(/^0x0{40}$/i.test(target))throw new Error('当前 Studio 使用零地址派发交易，本应用已停止向浏览器钱包请求签名。请保留当前账户与网络，先核对官方支持的部署方式；无需充值或关闭钱包安全提醒。');
+  if(/^0x0{40}$/i.test(target))throw new Error('Studio uses a zero-address dispatcher. External-wallet signing is blocked. Keep your current account and network and check the supported deployment route. Do not add funds or disable wallet security warnings.');
 }
 export function normalizeStudioTransaction(v:unknown) {
-  if(!object(v)||typeof v.status!=='string'||![0,1,2].includes(Number(v.type)))throw new Error('Studio 交易详情格式无效。');
+  if(!object(v)||typeof v.status!=='string'||![0,1,2].includes(Number(v.type)))throw new Error('Invalid Studio transaction details.');
   const data=object(v.data)?v.data:{};const consensus=object(v.consensus_data)?v.consensus_data:{};
   const receipt=Array.isArray(consensus.leader_receipt)?consensus.leader_receipt[0]:consensus.leader_receipt;
   const execution=object(receipt)?receipt.execution_result:undefined;
