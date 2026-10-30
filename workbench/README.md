@@ -2,7 +2,7 @@
 
 Browser application for reviewing synthetic website-delivery evidence against a fixed SLA rubric. It validates JSON, previews deterministic C1/C2 checks, verifies deployed source, runs an Intelligent Contract through GenLayer consensus, tracks finality and reads the C1–C4 findings.
 
-**Revision 0.1.5.** This revision addresses the Projects review request for a working in-app deploy/assess route and reproducible tests. It adds an explicit, memory-only Studionet testing account using the official SDK and preserves the external browser-wallet zero-dispatcher guard. Publication does not establish acceptance of the Projects submission.
+**Revision 0.1.6.** The application interface, validation errors, transaction status messages, and account prompts are fully English. This copy update preserves the v0.1.5 contract, SDK dependencies, signing flow, and safety guards. The original Projects submission was accepted on 2026-10-30; the historical live evidence below records v0.1.5, not a new v0.1.6 write run.
 
 ## Run and reproduce
 
@@ -29,14 +29,14 @@ The temporary route is restricted to stable Studionet **61999**, https://studio.
 
 ## Browser workflow
 
-1. Load the labelled synthetic case or import public evidence JSON; click **检查证据**.
-2. Open **链上评估**, read the temporary-account notice, opt in and click **创建本页测试账户**.
+1. Load the labelled synthetic case or import public evidence JSON; click **Validate evidence**.
+2. Open **On-chain Assessment**, read the temporary-account notice, opt in and click **Create test account**.
 3. Prepare deployment, review account/network/source/snapshot/fees, then separately confirm that operation.
-4. Use **交易记录 → 继续查询** for the same ID until FINALIZED and execution SUCCESS. Finality alone is not success.
+4. Use **Transaction History → Check status** for the same ID until FINALIZED and execution SUCCESS. Finality alone is not success.
 5. Keep the same page and account. Prepare and confirm assess for the contract deployed by this session. Source and frozen snapshot are rechecked; contracts owned by other accounts and already-assessed contracts are rejected.
 6. Read the actual findings and export public transaction metadata. Unknown broadcast state blocks further signing in the session; investigate instead of redeploying.
 
-The UI uses Chinese. See [the reviewer verification guide](docs/STUDIO-SESSION.md) for English mappings, safeguards and exact testing limits.
+The UI is English throughout, including validation and wallet feedback. Imported evidence and original on-chain findings retain their supplied text. See [the reviewer verification guide](docs/STUDIO-SESSION.md) for safeguards and exact testing limits.
 
 ## Tests and evidence boundaries
 
