@@ -1,0 +1,19 @@
+{
+  "verifiedAt": "2026-11-08T19:36:21.298Z",
+  "version": "0.1.8",
+  "checks": [
+    "Default English on fresh visit even when browser locale is zh-CN",
+    "Zero Chinese characters in English UI text and attributes",
+    "English -> Simplified Chinese -> English switcher updates all labels and status messages",
+    "Language preference persists across reload and falls back to English on invalid storage value",
+    "Draft text, revision number and SHA-256 fingerprints remain unchanged across language switches",
+    "Read-only live Studionet contract 0x12de9d0F0CEFC3697e76656A3b520c302e17faE9 verified across English and Chinese views",
+    "On-chain finding reasons preserved verbatim without silent translation",
+    "Desktop (1440px) and mobile (390px) layouts have zero horizontal overflow"
+  ],
+  "screenshots": [
+    "docs/bilingual-en-desktop-v018.png",
+    "docs/bilingual-zh-desktop-v018.png",
+    "docs/bilingual-en-mobile-v018.png"
+  ]
+}
