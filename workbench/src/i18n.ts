@@ -185,7 +185,25 @@ export type CopyDictionary = {
   resultSourceExample: string;
   resultSourceChainUnassessed: string;
   resultSourceChainResult: string;
+  resultSourceBundleLocal: string;
+  resultSourceBundleUnverified: string;
+  resultSourceBundleVerified: string;
   resultContextDefault: string;
+  btnExportBundle: string;
+  btnImportBundle: string;
+  btnVerifyBundleChain: string;
+  btnPinBaseline: string;
+  btnClearBaseline: string;
+  bundleGuide: string;
+  bundleTrustLocal: string;
+  bundleTrustUnverified: string;
+  bundleTrustVerified: string;
+  baselineHeading: string;
+  baselineEmpty: string;
+  baselinePinnedPrefix: string;
+  baselineDraftInvalid: string;
+  baselineIdentical: string;
+  baselineChangedSummary: string;
   statusMet: string;
   statusNotMet: string;
   statusInsufficient: string;
@@ -208,6 +226,12 @@ export type CopyDictionary = {
   msgNetworkChecked: string;
   msgExported: string;
   msgImported: string;
+  msgBundleExported: string;
+  msgBundleImportedLocal: string;
+  msgBundleImportedUnverified: string;
+  msgBundleVerifiedLive: string;
+  msgBaselinePinned: string;
+  msgBaselineCleared: string;
   msgResultsLoaded: string;
   msgPreparingConfig: string;
   msgCheckingSchema: string;
@@ -336,7 +360,25 @@ export const COPY: Record<Locale, CopyDictionary> = {
     resultSourceExample: 'Synthetic example · Fixed mock response',
     resultSourceChainUnassessed: 'On-chain evidence · Not assessed',
     resultSourceChainResult: 'On-chain result',
+    resultSourceBundleLocal: 'Imported bundle · Local preview',
+    resultSourceBundleUnverified: 'Imported bundle · Unverified on-chain',
+    resultSourceBundleVerified: 'On-chain result · Bundle verified on Studionet',
     resultContextDefault: 'Validate evidence to preview C1/C2. C3/C4 require an on-chain assessment. A separately labelled synthetic example is also available.',
+    btnExportBundle: 'Export verifiable bundle ↓',
+    btnImportBundle: 'Import & verify bundle',
+    btnVerifyBundleChain: 'Verify bundle on-chain ↗',
+    btnPinBaseline: 'Pin as baseline',
+    btnClearBaseline: 'Clear baseline',
+    bundleGuide: 'Export a self-contained bundle (snapshot + SHA-256 digests + findings) or import one to verify hashes, rubric rules, and live Studionet contract state.',
+    bundleTrustLocal: 'Cryptographically bound local preview bundle. No on-chain contract is claimed.',
+    bundleTrustUnverified: 'Offline bundle hashes and rubric rules passed. On-chain provenance is unverified until checked against Studionet (61999).',
+    bundleTrustVerified: 'Live Studionet (61999) cross-check passed: contract source, canonical snapshot, and on-chain findings match this bundle.',
+    baselineHeading: 'Baseline comparison & reassessment impact',
+    baselineEmpty: 'Pin a validated snapshot, on-chain read, or verified bundle as a baseline to compare edits and reassessment impact.',
+    baselinePinnedPrefix: 'Pinned baseline:',
+    baselineDraftInvalid: 'Current draft is not valid JSON or fails schema checks. Fix the draft to inspect field and criterion diffs against the pinned baseline.',
+    baselineIdentical: 'The current draft has the exact same canonical contract snapshot as the pinned baseline. No criterion statuses or evidence items changed.',
+    baselineChangedSummary: 'Canonical contract snapshot changed against the pinned baseline:',
     statusMet: 'Met',
     statusNotMet: 'Not met',
     statusInsufficient: 'Insufficient evidence',
@@ -359,6 +401,12 @@ export const COPY: Record<Locale, CopyDictionary> = {
     msgNetworkChecked: 'RPC chain ID verified. Contract deployment compatibility has not been verified.',
     msgExported: 'Work record exported.',
     msgImported: 'Evidence imported and kept only in this page memory.',
+    msgBundleExported: 'Verifiable assessment bundle exported.',
+    msgBundleImportedLocal: 'Assessment bundle verified (local preview).',
+    msgBundleImportedUnverified: 'Assessment bundle hashes and rubric verified offline. Click "Verify bundle on-chain" to cross-check against Studionet.',
+    msgBundleVerifiedLive: 'Bundle verified against live Studionet contract: source, canonical snapshot, and findings match.',
+    msgBaselinePinned: 'Current snapshot pinned as comparison baseline.',
+    msgBaselineCleared: 'Pinned comparison baseline cleared.',
     msgResultsLoaded: 'Results loaded. Export the work record from Transaction History.',
     msgPreparingConfig: 'Checking the account, network, and current Studio configuration…',
     msgCheckingSchema: 'Checking the contract interface; no signature requested…',
@@ -377,7 +425,7 @@ export const COPY: Record<Locale, CopyDictionary> = {
     contextChainUnassessedSuffix: 'Contract loaded. C1/C2 are local checks; assess has not run.',
     contextChainAssessedSuffix: 'Assessment covers supplied evidence only.',
     exportNote: 'RPC observations and local records; not a Portal acceptance or reward receipt. Current is null after an edit; history contains fingerprints only. No input evidence text is included.',
-    footerLeft: 'Agent SLA Workbench · v0.1.8',
+    footerLeft: 'Agent SLA Workbench · v0.1.9',
     footerRight: 'AI-assisted development · No escrow · No legal authority',
   },
   'zh-CN': {
@@ -485,7 +533,25 @@ export const COPY: Record<Locale, CopyDictionary> = {
     resultSourceExample: '合成示例 · 固定模拟响应',
     resultSourceChainUnassessed: '链上证据 · 尚未评估',
     resultSourceChainResult: '链上读取',
+    resultSourceBundleLocal: '已导入评估包 · 本地预览',
+    resultSourceBundleUnverified: '已导入评估包 · 待链上核验',
+    resultSourceBundleVerified: '链上评估结果 · 评估包已通过 Studionet 核验',
     resultContextDefault: '检查证据可预览 C1/C2；C3/C4 需要链上评估。也可以单独查看标明来源的合成示例。',
+    btnExportBundle: '导出可验证评估包 ↓',
+    btnImportBundle: '导入并核验评估包',
+    btnVerifyBundleChain: '链上交叉核验评估包 ↗',
+    btnPinBaseline: '锁存为对比基准',
+    btnClearBaseline: '清除基准',
+    bundleGuide: '导出自包含评估复核包（证据快照 + 双 SHA-256 指纹 + 评估结论），或导入评估包以校验哈希、规则与 Studionet 实时链上状态。',
+    bundleTrustLocal: '本地预览评估包哈希绑定通过，未声称关联链上合约。',
+    bundleTrustUnverified: '离线评估包哈希与规则校验通过；在与 Studionet (61999) 实时核对前，其链上来源属于未核验声明。',
+    bundleTrustVerified: 'Studionet (61999) 实时交叉核验通过：合约源码、规范化快照与链上评估结果均与该评估包完全吻合。',
+    baselineHeading: '冻结基准对比与重评影响分析',
+    baselineEmpty: '可将已检查的快照、链上读取结果或已核验评估包锁存为对比基准，以比对后续编辑差异与重评影响。',
+    baselinePinnedPrefix: '已锁存基准：',
+    baselineDraftInvalid: '当前草稿不是有效 JSON 或未通过结构检查。修复草稿后可查看与已锁存基准的字段和标准差异。',
+    baselineIdentical: '当前草稿与已锁存基准的合约规范化快照完全一致，各项标准状态与证据条目均无变化。',
+    baselineChangedSummary: '当前草稿相对于已锁存基准的合约规范化快照已变更：',
     statusMet: '满足',
     statusNotMet: '未满足',
     statusInsufficient: '证据不足',
@@ -508,6 +574,12 @@ export const COPY: Record<Locale, CopyDictionary> = {
     msgNetworkChecked: 'RPC 链 ID 检查通过，尚未验证合约部署兼容性。',
     msgExported: '工作记录已导出。',
     msgImported: '已导入证据包，仅保留在当前页面内存中。',
+    msgBundleExported: '可验证评估复核包已导出。',
+    msgBundleImportedLocal: '评估复核包校验通过（本地预览）。',
+    msgBundleImportedUnverified: '评估复核包离线哈希与规则校验通过。点击“链上交叉核验评估包”可与 Studionet 实时比对。',
+    msgBundleVerifiedLive: '评估复核包已通过 Studionet 链上实时核验：源码、规范化快照与结论完全一致。',
+    msgBaselinePinned: '当前快照已锁存为对比基准。',
+    msgBaselineCleared: '已清除对比基准。',
     msgResultsLoaded: '读取完成。可在交易记录中导出工作记录。',
     msgPreparingConfig: '正在核对账户、网络和 Studio 当前配置…',
     msgCheckingSchema: '正在读取合约接口，尚未请求签名…',
@@ -526,7 +598,7 @@ export const COPY: Record<Locale, CopyDictionary> = {
     contextChainUnassessedSuffix: '合约已读取；C1/C2 为本地核对，不代表已运行 assess。',
     contextChainAssessedSuffix: '仅评估提供的材料。',
     exportNote: '仅包含 RPC 观测与本机记录，不是 Portal 采纳或奖励回执。编辑后 current 为 null；history 仅保留指纹，不含证据正文。',
-    footerLeft: 'Agent SLA Workbench · v0.1.8',
+    footerLeft: 'Agent SLA Workbench · v0.1.9',
     footerRight: 'AI 辅助开发 · 无资金托管 · 无法律裁判效力',
   },
 };
@@ -635,11 +707,64 @@ const ERROR_ZH: Record<string, string> = {
   'No wallet account was authorized.': '没有授权的钱包账号。',
   'The file exceeds 16,000 bytes.': '文件超过 16,000 字节。',
   'Import discarded because the draft changed while the file was loading.': '文件读取期间草稿已修改，本次导入已放弃。',
+  'String contains an unpaired UTF-16 surrogate.': '字符串包含未配对的 UTF-16 代理项。',
+  'The evidence snapshot contains an invalid unpaired Unicode surrogate.': '证据快照包含无效的未配对 Unicode 代理项。',
+  'Numeric fields must be exact integers without decimals or exponents.': '数字字段必须是精确整数，不能包含小数或科学计数法。',
+  'The fixed synthetic example is a canned demonstration and cannot be exported as a verifiable assessment bundle.': '固定合成示例仅作演示，不能导出为可验证评估复核包。',
+  'Validate the current draft or read an on-chain contract before exporting an assessment bundle.': '导出评估复核包前，请先检查当前草稿或读取链上合约。',
+  'Verify the imported bundle on-chain or re-validate the draft before exporting a new bundle.': '请先对已导入的评估包执行链上核验，或重新检查当前草稿后再导出新评估包。',
+  'The active draft case_id no longer matches the bound review.': '当前草稿的 case_id 与已绑定复核不一致。',
+  'The active draft fingerprint no longer matches the bound review. Validate or read again.': '当前草稿指纹与已绑定复核不一致，请重新检查或读取。',
+  'Local preview bundles cannot claim on-chain contract provenance.': '本地预览评估包不能声称具有链上合约来源。',
+  'Local preview bundles cannot include on-chain C1–C4 assessment results.': '本地预览评估包不能包含链上 C1–C4 评估结果。',
+  'On-chain bundles require verified Studionet contract provenance.': '链上评估包需要已验证的 Studionet 合约来源信息。',
+  'On-chain bundles require Studionet chainId 61999.': '链上评估包要求 Studionet 链 ID 为 61999。',
+  'Contract source SHA-256 does not match the reviewed workbench contract.': '合约源码 SHA-256 与本工作台已审核合约不一致。',
+  'Missing on-chain assessment result payload.': '缺少链上评估结果数据。',
+  'Unassessed on-chain snapshot bundles cannot include C1–C4 assessment results.': '尚未评估的链上快照包不能包含 C1–C4 评估结果。',
+  'The serialized assessment bundle exceeds the 64,000-byte limit.': '序列化后的评估复核包超过 64,000 字节上限。',
+  'The assessment bundle file must not exceed 64,000 bytes.': '评估复核包文件不能超过 64,000 字节。',
+  'The assessment bundle contains an invalid unpaired Unicode surrogate.': '评估复核包包含无效的未配对 Unicode 代理项。',
+  'The assessment bundle is not valid JSON.': '评估复核包不是有效的 JSON。',
+  'The assessment bundle has missing or unknown top-level fields.': '评估复核包缺少必填字段或包含未知顶层字段。',
+  'Unsupported assessment bundle schema version.': '不支持的评估复核包 schema 版本。',
+  'Invalid bundle timestamp.': '评估复核包时间戳无效。',
+  'Invalid assessment bundle origin.': '评估复核包来源类型无效。',
+  'Invalid snapshot fields in bundle.': '评估复核包中的快照字段无效。',
+  'Invalid SHA-256 fields in bundle.': '评估复核包中的 SHA-256 字段无效。',
+  'Bundle SHA-256 digests must be lowercase hexadecimal.': '评估复核包的 SHA-256 摘要必须为小写十六进制。',
+  'Snapshot SHA-256 mismatch: the evidence snapshot was modified or corrupted.': '快照 SHA-256 不匹配：证据快照已被篡改或损坏。',
+  'Bundle caseId does not match the embedded evidence snapshot.': '评估复核包的 caseId 与内嵌证据快照不一致。',
+  'Bundle canonicalSnapshot does not match the deterministic contract canonicalization.': '评估复核包的规范化快照与确定性合约规范化结果不一致。',
+  'Canonical SHA-256 mismatch: the contract snapshot digest does not match.': '规范化快照 SHA-256 不匹配：合约快照摘要不一致。',
+  'Bundle objective findings must contain C1 and C2.': '评估复核包的确定性检查结果必须包含 C1 和 C2。',
+  'Bundle C1/C2 objective findings do not match the evidence snapshot.': '评估复核包的 C1/C2 确定性检查结果与证据快照不一致。',
+  'Local preview bundles cannot carry on-chain provenance.': '本地预览评估包不能携带链上来源信息。',
+  'Local preview bundles cannot carry on-chain C1–C4 assessment results.': '本地预览评估包不能携带链上 C1–C4 评估结果。',
+  'Invalid on-chain provenance object in bundle.': '评估复核包中的链上来源对象无效。',
+  'Bundle provenance chainId must be 61999 (Studionet).': '评估复核包链 ID 必须为 61999（Studionet）。',
+  'Bundle contract source SHA-256 does not match this workbench.': '评估复核包的合约源码 SHA-256 与本工作台不一致。',
+  'Unassessed chain_snapshot bundles cannot contain an assessment object.': '尚未评估的链上快照包不能包含评估结果对象。',
+  'Invalid assessment object in chain_result bundle.': '链上评估结果包中的 assessment 对象无效。',
+  'Invalid assessment result fields.': '评估结果字段无效。',
+  'resultSha256 must be lowercase hexadecimal.': 'resultSha256 必须为小写十六进制。',
+  'Bundle resultRaw must be in canonical contract format.': '评估复核包的 resultRaw 必须为规范化合约格式。',
+  'Assessment result SHA-256 mismatch: the findings payload was modified.': '评估结果 SHA-256 不匹配：裁决结果已被篡改。',
+  'Bundle findings array does not match the validated resultRaw payload.': '评估复核包的 findings 数组与已校验的 resultRaw 不一致。',
+  'Local preview bundles do not have an on-chain contract to verify against.': '本地预览评估包没有可核验的链上合约。',
+  'The contract address field does not match the contract recorded in the bundle.': '当前输入的合约地址与评估包记录的合约地址不一致。',
+  'Validate evidence, read a contract, or verify an imported bundle before pinning a baseline.': '锁存对比基准前，请先检查当前草稿、读取链上合约或导入评估包。',
+  'Bundle verification discarded because the draft or contract changed while loading.': '核验期间草稿或合约发生变化，本次评估包链上核验结果已丢弃。',
+  'Bundle import discarded because the draft changed while the file was loading.': '文件读取期间草稿已修改，本次评估包导入已放弃。',
 };
 
 export function translateError(rawMessage: string, locale: Locale): string {
   if (locale === 'en') return rawMessage;
   if (rawMessage in ERROR_ZH) return ERROR_ZH[rawMessage];
+  const canonicalLimitMatch = rawMessage.match(/^The canonicalized contract snapshot is (\d+) bytes and exceeds the 16,000-byte on-chain limit after ASCII escaping\.$/);
+  if (canonicalLimitMatch) {
+    return `规范化后的合约快照为 ${canonicalLimitMatch[1]} 字节，经 ASCII 转义后超过链上 16,000 字节上限。`;
+  }
   if (/JSON|Unexpected token|Unexpected end of JSON|Expected property name/i.test(rawMessage)) {
     return `JSON 语法无效：${rawMessage}`;
   }

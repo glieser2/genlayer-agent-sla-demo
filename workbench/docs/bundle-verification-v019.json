@@ -1,0 +1,19 @@
+{
+  "verifiedAt": "2026-11-08T22:14:57.659Z",
+  "version": "0.1.9",
+  "checks": [
+    "Dual SHA-256 fingerprints: exact text SHA-256 (e8e8746e…) and canonical contract SHA-256 (5e7433a0…) aligned with Studionet contract storage",
+    "Criterion-to-evidence traceability inline details for C1–C4 without breaking raw content preservation",
+    "Pinned baseline comparison and reassessment impact analysis across edited drafts while clearing stale findings immediately",
+    "Export self-contained verifiable assessment bundle (agent-sla-assessment-bundle/v1) from verified views",
+    "Zero-trust bundle import rejects tampered snapshots, forged provenance, and mismatched digests",
+    "Offline imported chain_result bundle explicitly labelled Unverified on-chain with null work-record chainRead until live RPC cross-check",
+    "Read-only live Studionet (61999) cross-check against 0x12de9d0F0CEFC3697e76656A3b520c302e17faE9 upgrades bundle to verified on-chain status",
+    "Full English (default, zero Han characters) and Simplified Chinese support across desktop (1440px) and mobile (390px) viewports"
+  ],
+  "screenshots": [
+    "docs/bundle-en-desktop-v019.png",
+    "docs/bundle-zh-desktop-v019.png",
+    "docs/bundle-en-mobile-v019.png"
+  ]
+}

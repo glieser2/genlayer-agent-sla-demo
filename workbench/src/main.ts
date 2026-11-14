@@ -1,10 +1,23 @@
 import './style.css';
 import './action-feedback.css';
-import {parseCase, parseResult, objectiveFindings, address, hash, receiptOutcome, parseJournal, type Finding, type TxRecord} from './domain.ts';
+import {parseCase, parseResult, objectiveFindings, address, hash, receiptOutcome, parseJournal, type CaseInput, type Finding, type TxRecord} from './domain.ts';
 import {CHAIN, readClient, makeWriter, checkNetwork, switchNetwork, contractUrl, transactionUrl, type Provider} from './network.ts';
 import {studioRpc, normalizeStudioTransaction} from './studio.ts';
 import {createStudioSession, type SessionReview} from './studio-session.ts';
 import {createEvidenceReview, type ReviewOrigin} from './evidence-review.ts';
+import {
+  validateContractCompatibleCase,
+  validateCanonicalAssessmentResult,
+  canonicalizeCase,
+  buildAssessmentBundle,
+  verifyAssessmentBundle,
+  compareBundleWithLiveChain,
+  diffSnapshots,
+  buildCriterionTraceability,
+  type VerifiedBundleRecord,
+  type LiveVerificationOutcome,
+  type SnapshotDiff,
+} from './assessment-bundle.ts';
 import {
   COPY,
   loadLocale,
@@ -42,7 +55,7 @@ document.querySelector('#app')!.innerHTML = `
 <section id="prepare" class="panel"><div class="workspace"><article class="card"><div class="card-title"><div><p id="case-eyebrow" class="eyebrow">CASE SNAPSHOT</p><h2 id="case-title">Your delivery evidence</h2></div><span id="case-status" class="pill">Not validated</span></div><p id="case-guide" class="muted">Import or edit JSON. Deployment freezes this evidence snapshot. Use public material only; never include passwords, private keys, or private personal data.</p><div class="toolbar"><button id="sample">Load synthetic case</button><label class="file-button" for="import"><span id="import-label">Import JSON</span><input type="file" id="import" accept=".json,application/json"></label><button id="save-input">Download evidence</button></div><label id="snapshot-sr-label" for="snapshot" class="sr-only">Delivery evidence JSON</label><textarea id="snapshot" spellcheck="false" placeholder="Load the synthetic case or paste your evidence JSON…"></textarea><div class="editor-footer"><span id="byte-count">0 / 16,000 bytes</span><button id="validate" class="dark">Validate evidence →</button></div></article><aside class="card criteria"><p id="rubric-eyebrow" class="eyebrow">SLA-DEMO-v1</p><h2 id="rubric-title">Four criteria. One evidence snapshot.</h2><div class="criterion"><b>C1</b><div><h3 id="c1-title">On-time delivery</h3><p id="c1-desc">Submitted on or before the agreed deadline.</p><small id="c1-tag">Deterministic check</small></div></div><div class="criterion"><b>C2</b><div><h3 id="c2-title">Tests and revision</h3><p id="c2-desc">The report matches the delivered revision and all tests pass.</p><small id="c2-tag">Deterministic check</small></div></div><div class="criterion"><b>C3</b><div><h3 id="c3-title">Responsive layout</h3><p id="c3-desc">No horizontal overflow at 360, 768, and 1440px.</p><small id="c3-tag">GenLayer semantic assessment</small></div></div><div class="criterion"><b>C4</b><div><h3 id="c4-title">Handover documentation</h3><p id="c4-desc">Install, run, and test instructions match the delivered revision.</p><small id="c4-tag">GenLayer semantic assessment</small></div></div><button id="show-example" class="full">View synthetic example ↗</button><p id="rubric-footnote" class="footnote">Insufficient evidence is a valid outcome, not an automatic delivery failure.</p></aside></div></section>
 <section id="chain" class="panel hidden"><div class="workspace"><article class="card"><p id="chain-eyebrow" class="eyebrow">GENLAYER CONNECTION</p><h2 id="chain-title">Read a contract or deploy evidence</h2><p id="chain-network-notice" class="muted">Network: Studionet development network. This development network may reset. A Studionet deployment does not establish Bradbury deployment or Portal network eligibility.</p><div class="toolbar"><button id="check-network">Check network</button><a id="link-open-studio" href="https://studio.genlayer.com" target="_blank" rel="noreferrer">Open official Studio ↗</a><a id="link-download-contract" href="${asset('contracts/agent_sla.py')}" download>Download contract source ↓</a></div><p id="network-state" class="footnote">RPC not checked</p><label id="contract-label" for="contract">Contract address</label><div class="input-row"><input id="contract" placeholder="0x…" autocomplete="off"><button id="read" class="dark">Read results</button></div><p id="read-footnote" class="footnote">The deployed source must match the version bundled with this app. No wallet connection is needed to read results.</p><hr><h3 id="prepare-heading">Prepare a transaction</h3><p id="prepare-desc" class="muted">This app uses stable Studionet (61999) and SDK 1.1.8. The external-wallet route blocks the zero dispatcher. To test in-app writes, explicitly choose a temporary test account below. Accounts never switch automatically.</p><div class="toolbar"><button id="quote-deploy">Prepare deployment</button><button id="quote-assess">Prepare assessment</button></div><p id="prepare-footnote" class="footnote">Deployment freezes the current evidence. Only the deployer may call assess, once. Adding funds will not resolve the current wallet compatibility issue.</p></article><aside class="card"><p id="review-eyebrow" class="eyebrow">TRANSACTION REVIEW</p><h2 id="review-title">Review before signing</h2><p id="quote-empty" class="muted">Choose an account and prepare a transaction. Confirm temporary-account operations here; confirm external-wallet operations in your wallet.</p><pre id="quote-summary" class="hidden"></pre><label class="check"><input id="consent" type="checkbox"><span id="consent-label">I have reviewed the network, account, evidence, and fees and approve this operation. Confirming a temporary-account operation signs and sends it from this page. An external wallet requires its own confirmation.</span></label><button id="submit" class="dark full" disabled>Prepare a transaction first</button><p id="review-footnote" class="footnote">Never enter a private key or recovery phrase. After submission, keep querying the original transaction ID; a timeout does not trigger resubmission.</p></aside></div></section>
 <section id="history" class="panel hidden"><article class="card"><div class="card-title"><div><p id="history-eyebrow" class="eyebrow">TRANSACTION JOURNAL</p><h2 id="history-title">Track progress without resubmitting</h2></div><button id="export">Export work record ↓</button></div><p id="history-desc" class="muted">Only transaction IDs, addresses, and statuses are saved locally, not the evidence body. Exported RPC observations are not Portal receipts.</p><label id="txid-label" for="txid">Existing transaction ID</label><div class="input-row"><input id="txid" placeholder="0x…"><button id="track">Check transaction</button></div><div id="journal"></div></article></section>
-<section class="results card"><div class="card-title"><div><p id="results-eyebrow" class="eyebrow">ASSESSMENT</p><h2 id="results-title">Findings by criterion</h2></div><span id="result-source" class="pill">No results yet</span></div><p id="result-context" class="muted">Validate evidence to preview C1/C2. C3/C4 require an on-chain assessment. A separately labelled synthetic example is also available.</p><div id="findings" class="findings"></div></section><p id="message" role="status" aria-live="polite">Start by loading or importing an evidence snapshot.</p><footer><span id="footer-left">Agent SLA Workbench · v0.1.8</span><span id="footer-right">AI-assisted development · No escrow · No legal authority</span></footer></main>`;
+<section class="results card"><div class="card-title"><div><p id="results-eyebrow" class="eyebrow">ASSESSMENT</p><h2 id="results-title">Findings by criterion</h2></div><span id="result-source" class="pill">No results yet</span></div><p id="result-context" class="muted">Validate evidence to preview C1/C2. C3/C4 require an on-chain assessment. A separately labelled synthetic example is also available.</p><div id="findings" class="findings"></div></section><p id="message" role="status" aria-live="polite">Start by loading or importing an evidence snapshot.</p><footer><span id="footer-left">Agent SLA Workbench · v0.1.9</span><span id="footer-right">AI-assisted development · No escrow · No legal authority</span></footer></main>`;
 
 const feedback = document.createElement('p');
 feedback.id = 'chain-feedback';
@@ -75,11 +88,51 @@ try { records = parseJournal(localStorage.getItem('agent-sla:transactions:v1'));
 
 let evidence: Record<string, unknown> | null = null;
 const evidenceReview = createEvidenceReview();
+
+// v0.1.9 评估复核包操作栏、链上核验框与冻结基准对比面板
+const bundleControls = document.createElement('div');
+bundleControls.className = 'bundle-controls';
+bundleControls.innerHTML = `<p id="bundle-guide" class="footnote"></p><div class="toolbar"><button id="export-bundle" type="button"></button><label class="file-button" for="import-bundle"><span id="import-bundle-label"></span><input type="file" id="import-bundle" accept=".json,application/json"></label><button id="verify-bundle-chain" type="button" class="dark hidden"></button><button id="pin-baseline" type="button"></button><button id="clear-baseline" type="button" class="hidden"></button></div>`;
+$('findings').before(bundleControls);
+
 const binding = document.createElement('div');
 binding.id = 'review-binding';
 binding.className = 'review-binding';
 binding.hidden = true;
 $('findings').before(binding);
+
+const liveVerifyBox = document.createElement('div');
+liveVerifyBox.id = 'live-verify-box';
+liveVerifyBox.className = 'review-binding';
+liveVerifyBox.hidden = true;
+$('findings').before(liveVerifyBox);
+
+const baselinePanel = document.createElement('div');
+baselinePanel.id = 'baseline-panel';
+baselinePanel.className = 'baseline-panel';
+baselinePanel.innerHTML = `<h3 id="baseline-heading"></h3><div id="baseline-content"></div>`;
+$('findings').after(baselinePanel);
+
+// 当前已绑定的规范化快照哈希、案例结构、链上原始结果文本及离线导入评估包状态
+let currentCanonicalSha256: string | null = null;
+let currentParsedCase: CaseInput | null = null;
+let currentChainResultRaw: string | null = null;
+let importedBundleState: VerifiedBundleRecord | null = null;
+let liveVerifyState: LiveVerificationOutcome | null = null;
+let bundleVerifiedOnChain = false;
+
+type PinnedBaseline = {
+  rawSnapshot: string;
+  caseId: string;
+  canonicalSha256: string;
+  pinnedAt: string;
+};
+let pinnedBaseline: PinnedBaseline | null = null;
+let cachedBaselineDiff: {
+  status: 'none' | 'invalid_draft' | 'ready';
+  diff?: SnapshotDiff;
+} = {status: 'none'};
+let diffSequence = 0;
 
 type Quote = {
   kind: 'deploy' | 'assess';
@@ -114,7 +167,8 @@ let caseValidated = false;
 type ResultViewState =
   | {mode: 'none'}
   | {mode: 'outdated'; reasonKey: 'expireEvidenceReplaced' | 'expireTargetChanged' | 'expireEvidenceEdited' | 'expireContractEdited'}
-  | {mode: 'findings'; findings: Finding[]; origin: ReviewOrigin; caseId: string; contract?: string};
+  | {mode: 'findings'; findings: Finding[]; origin: ReviewOrigin; caseId: string; contract?: string}
+  | {mode: 'imported_bundle'; record: VerifiedBundleRecord};
 
 let currentResultView: ResultViewState = {mode: 'none'};
 
@@ -249,12 +303,93 @@ function invalidate() {
   renderQuoteState();
 }
 
+function renderLiveVerifyBox() {
+  liveVerifyBox.replaceChildren();
+  liveVerifyBox.className = 'review-binding';
+  if (!liveVerifyState) {
+    liveVerifyBox.hidden = true;
+    return;
+  }
+  liveVerifyBox.hidden = false;
+  const title = document.createElement('strong');
+  const detail = document.createElement('p');
+
+  if (liveVerifyState.status === 'live_match') {
+    title.textContent = locale === 'zh-CN'
+      ? 'Studionet (61999) 实时交叉核验通过'
+      : 'Studionet (61999) live cross-check passed';
+    detail.textContent = COPY[locale].bundleTrustVerified;
+    const meta = document.createElement('code');
+    meta.textContent = `Contract: ${liveVerifyState.contract} · Canonical SHA-256: ${liveVerifyState.canonicalSha256}`;
+    liveVerifyBox.append(title, detail, meta);
+  } else if (liveVerifyState.status === 'live_mismatch') {
+    liveVerifyBox.classList.add('mismatch');
+    title.textContent = locale === 'zh-CN'
+      ? 'Studionet 链上交叉核验未通过（发现不一致）'
+      : 'Studionet on-chain cross-check failed (mismatch detected)';
+    detail.textContent = liveVerifyState.reasons.join(' ');
+    liveVerifyBox.append(title, detail);
+  } else {
+    liveVerifyBox.classList.add('warn');
+    title.textContent = locale === 'zh-CN'
+      ? 'Studionet 实时核验暂不可用（RPC 错误）'
+      : 'Studionet live cross-check unavailable (RPC error)';
+    detail.textContent = translateError(liveVerifyState.error, locale);
+    liveVerifyBox.append(title, detail);
+  }
+}
+
 function renderBinding() {
-  const proof = evidenceReview.current;
   binding.replaceChildren();
-  binding.hidden = !proof;
-  if (!proof) return;
+  binding.className = 'review-binding';
   const c = COPY[locale];
+
+  // 1. 离线导入且尚未通过链上实时核验的评估复核包视图
+  if (currentResultView.mode === 'imported_bundle') {
+    const {bundle, trust} = currentResultView.record;
+    binding.hidden = false;
+    if (trust === 'unverified_on_chain') {
+      binding.classList.add('warn');
+    }
+    const title = document.createElement('strong');
+    title.textContent = trust === 'local_only'
+      ? c.resultSourceBundleLocal
+      : c.resultSourceBundleUnverified;
+    const origins: Record<string, string> = {
+      local_preview: c.originLocal,
+      chain_snapshot: c.originChainSnapshot,
+      chain_result: c.originChainResult,
+    };
+    const detail = document.createElement('p');
+    detail.textContent = `${bundle.caseId} · ${origins[bundle.origin] ?? bundle.origin} · ${formatTimestamp(bundle.observedAt, locale)} (${bundle.observedAt})`;
+    const snapshotHash = document.createElement('code');
+    snapshotHash.textContent = `Snapshot SHA-256: ${bundle.snapshotSha256}`;
+    const canonicalHash = document.createElement('code');
+    canonicalHash.textContent = `Canonical Contract SHA-256: ${bundle.canonicalSha256}`;
+    binding.append(title, detail, snapshotHash, canonicalHash);
+
+    if (bundle.provenance) {
+      const claim = document.createElement('p');
+      claim.textContent = locale === 'zh-CN'
+        ? `评估包声明的合约（待链上核验）· chain ${bundle.provenance.chainId} · ${bundle.provenance.contract}`
+        : `Claimed contract in bundle (unverified on-chain) · chain ${bundle.provenance.chainId} · ${bundle.provenance.contract}`;
+      const sourceHash = document.createElement('code');
+      sourceHash.textContent = `Source SHA-256: ${bundle.provenance.sourceSha256}`;
+      binding.append(claim, sourceHash);
+    }
+    const trustNote = document.createElement('p');
+    trustNote.textContent = trust === 'local_only' ? c.bundleTrustLocal : c.bundleTrustUnverified;
+    binding.append(trustNote);
+    renderLiveVerifyBox();
+    return;
+  }
+
+  // 2. 标准已绑定评估视图（含通过实时核验升级后的评估包）
+  const proof = evidenceReview.current;
+  binding.hidden = !proof;
+  renderLiveVerifyBox();
+  if (!proof) return;
+
   const title = document.createElement('strong');
   title.textContent = proof.origin === 'synthetic_example'
     ? c.bindingExampleTitle
@@ -271,9 +406,14 @@ function renderBinding() {
   detail.textContent = `${proof.caseId} · ${origins[proof.origin]} · ${formatTimestamp(proof.observedAt, locale)} (${proof.observedAt})`;
   const snapshotHash = document.createElement('code');
   snapshotHash.textContent = `Snapshot SHA-256: ${proof.snapshotSha256}`;
-  const note = document.createElement('p');
-  note.textContent = c.bindingNote;
   binding.append(title, detail, snapshotHash);
+
+  if (currentCanonicalSha256) {
+    const canonicalHash = document.createElement('code');
+    canonicalHash.textContent = `Canonical Contract SHA-256: ${currentCanonicalSha256}`;
+    binding.append(canonicalHash);
+  }
+
   if (proof.contract) {
     const contract = document.createElement('p');
     contract.textContent = locale === 'zh-CN'
@@ -283,7 +423,159 @@ function renderBinding() {
     sourceHash.textContent = `Source SHA-256: ${proof.sourceSha256}`;
     binding.append(contract, sourceHash);
   }
+  const note = document.createElement('p');
+  note.textContent = c.bindingNote;
   binding.append(note);
+}
+
+function renderBundleButtons() {
+  const verifyBtn = $<HTMLButtonElement>('verify-bundle-chain');
+  const isUnverifiedChainBundle =
+    currentResultView.mode === 'imported_bundle' && currentResultView.record.trust === 'unverified_on_chain';
+  verifyBtn.classList.toggle('hidden', !isUnverifiedChainBundle);
+
+  const clearBaselineBtn = $<HTMLButtonElement>('clear-baseline');
+  clearBaselineBtn.classList.toggle('hidden', !pinnedBaseline);
+}
+
+function renderBaselinePanel() {
+  const c = COPY[locale];
+  $('baseline-heading').textContent = c.baselineHeading;
+  const container = $('baseline-content');
+  container.replaceChildren();
+
+  if (!pinnedBaseline) {
+    const empty = document.createElement('p');
+    empty.textContent = c.baselineEmpty;
+    container.append(empty);
+    return;
+  }
+
+  const header = document.createElement('p');
+  header.textContent = `${c.baselinePinnedPrefix} ${pinnedBaseline.caseId} · ${formatTimestamp(pinnedBaseline.pinnedAt, locale)}`;
+  const baseHash = document.createElement('code');
+  baseHash.textContent = `Baseline Canonical SHA-256: ${pinnedBaseline.canonicalSha256}`;
+  container.append(header, baseHash);
+
+  if (cachedBaselineDiff.status === 'invalid_draft' || !cachedBaselineDiff.diff) {
+    const invalidMsg = document.createElement('p');
+    invalidMsg.textContent = c.baselineDraftInvalid;
+    container.append(invalidMsg);
+    return;
+  }
+
+  const d = cachedBaselineDiff.diff;
+  if (d.identicalCanonical) {
+    const sameMsg = document.createElement('p');
+    sameMsg.textContent = d.rawTextIdentical
+      ? c.baselineIdentical
+      : locale === 'zh-CN'
+        ? `${c.baselineIdentical}（仅 JSON 空白或缩进格式不同。）`
+        : `${c.baselineIdentical} (Only JSON whitespace or formatting differs.)`;
+    container.append(sameMsg);
+    return;
+  }
+
+  const summary = document.createElement('p');
+  summary.textContent = c.baselineChangedSummary;
+  const candHash = document.createElement('code');
+  candHash.textContent = `Candidate Canonical SHA-256: ${d.candidateCanonicalSha256}`;
+  const list = document.createElement('ul');
+  list.className = 'baseline-list';
+
+  const addItem = (text: string) => {
+    const li = document.createElement('li');
+    li.textContent = text;
+    list.append(li);
+  };
+
+  if (d.caseId.changed) {
+    addItem(
+      locale === 'zh-CN'
+        ? `案件 ID 变更：${d.caseId.before} → ${d.caseId.after}`
+        : `case_id changed: ${d.caseId.before} → ${d.caseId.after}`,
+    );
+  }
+  if (d.dueAt.changed || d.submittedAt.changed) {
+    addItem(
+      locale === 'zh-CN'
+        ? `时间戳变更：due_at (${d.dueAt.before} → ${d.dueAt.after})，submitted_at (${String(d.submittedAt.before)} → ${String(d.submittedAt.after)})`
+        : `Timestamps changed: due_at (${d.dueAt.before} → ${d.dueAt.after}), submitted_at (${String(d.submittedAt.before)} → ${String(d.submittedAt.after)})`,
+    );
+  }
+  if (d.deliveryCommit.changed) {
+    addItem(
+      locale === 'zh-CN'
+        ? `交付版本变更：${short(d.deliveryCommit.before)} → ${short(d.deliveryCommit.after)}`
+        : `delivery_commit changed: ${short(d.deliveryCommit.before)} → ${short(d.deliveryCommit.after)}`,
+    );
+  }
+  if (d.report.status !== 'unchanged') {
+    const beforeRep = d.report.before ? `${d.report.before.passed}/${d.report.before.total}` : 'null';
+    const afterRep = d.report.after ? `${d.report.after.passed}/${d.report.after.total}` : 'null';
+    addItem(
+      locale === 'zh-CN'
+        ? `测试报告 (${d.report.status})：通过数 ${beforeRep} → ${afterRep}`
+        : `Test report (${d.report.status}): pass count ${beforeRep} → ${afterRep}`,
+    );
+  }
+  if (d.disputeClientChanged || d.disputeAgentChanged) {
+    addItem(
+      locale === 'zh-CN'
+        ? `争议陈述已修改（client: ${d.disputeClientChanged ? '已改' : '未改'}，agent: ${d.disputeAgentChanged ? '已改' : '未改'}）`
+        : `Party statements modified (client: ${d.disputeClientChanged ? 'changed' : 'unchanged'}, agent: ${d.disputeAgentChanged ? 'changed' : 'unchanged'})`,
+    );
+  }
+  for (const ev of d.evidenceDiffs) {
+    if (ev.status === 'unchanged') continue;
+    addItem(
+      locale === 'zh-CN'
+        ? `证据项 ${ev.id} [${ev.status}]：标准 ${ev.criteriaAfter.join('/') || ev.criteriaBefore.join('/')}，长度 ${ev.lengthBefore} → ${ev.lengthAfter} 字符`
+        : `Evidence ${ev.id} [${ev.status}]: criteria ${ev.criteriaAfter.join('/') || ev.criteriaBefore.join('/')}, length ${ev.lengthBefore} → ${ev.lengthAfter} chars`,
+    );
+  }
+  if (d.evidenceOrderChanged) {
+    addItem(
+      locale === 'zh-CN'
+        ? '证据数组顺序已变更（影响合约规范化哈希）。'
+        : 'Evidence array order changed (affects canonical contract SHA-256).',
+    );
+  }
+
+  addItem(
+    locale === 'zh-CN'
+      ? `确定性标准状态：C1 (${d.c1Status.before} → ${d.c1Status.after})，C2 (${d.c2Status.before} → ${d.c2Status.after})`
+      : `Deterministic status impact: C1 (${d.c1Status.before} → ${d.c1Status.after}), C2 (${d.c2Status.before} → ${d.c2Status.after})`,
+  );
+
+  if (d.c3ReassessmentRequired || d.c4ReassessmentRequired) {
+    const affected = [d.c3ReassessmentRequired ? 'C3' : '', d.c4ReassessmentRequired ? 'C4' : ''].filter(Boolean).join(' & ');
+    addItem(
+      locale === 'zh-CN'
+        ? `语义评估影响：${affected} 的关联证据或上下文已变更，需部署新快照并运行链上 assess() 重新评估。`
+        : `Semantic reassessment impact: ${affected} evidence or context changed; requires deploying the new snapshot and running on-chain assess().`,
+    );
+  }
+
+  container.append(summary, candHash, list);
+}
+
+async function refreshBaselineDiff() {
+  const seq = ++diffSequence;
+  if (!pinnedBaseline) {
+    cachedBaselineDiff = {status: 'none'};
+    renderBaselinePanel();
+    return;
+  }
+  try {
+    const diff = await diffSnapshots(pinnedBaseline.rawSnapshot, snapshot());
+    if (seq !== diffSequence) return;
+    cachedBaselineDiff = {status: 'ready', diff};
+  } catch {
+    if (seq !== diffSequence) return;
+    cachedBaselineDiff = {status: 'invalid_draft'};
+  }
+  renderBaselinePanel();
 }
 
 function renderResultView() {
@@ -299,6 +591,8 @@ function renderResultView() {
     not_met: c.statusNotMet,
     insufficient_evidence: c.statusInsufficient,
   };
+
+  renderBundleButtons();
 
   if (currentResultView.mode === 'none') {
     $('result-source').textContent = c.resultSourceNone;
@@ -316,24 +610,52 @@ function renderResultView() {
     return;
   }
 
-  const {findings, origin, caseId, contract} = currentResultView;
+  let findings: Finding[];
+  let origin: ReviewOrigin;
+  let caseId: string;
+  let contract: string | undefined;
   let provenance = c.resultSourceLocal;
-  let context = `${caseId} · ${c.contextLocalPreviewSuffix}`;
-  if (origin === 'synthetic_example') {
-    provenance = c.resultSourceExample;
-    context = c.contextExample;
-  } else if (origin === 'chain_snapshot') {
-    provenance = c.resultSourceChainUnassessed;
-    context = `${caseId} · ${c.contextChainUnassessedSuffix}`;
-  } else if (origin === 'chain_result') {
-    provenance = c.resultSourceChainResult;
-    context = `${caseId} · ${short(contract ?? '')} · ${c.contextChainAssessedSuffix}`;
+  let context = '';
+
+  if (currentResultView.mode === 'imported_bundle') {
+    const rec = currentResultView.record;
+    findings = rec.findings;
+    origin = rec.bundle.origin;
+    caseId = rec.bundle.caseId;
+    contract = rec.bundle.provenance?.contract;
+    if (rec.trust === 'local_only') {
+      provenance = c.resultSourceBundleLocal;
+      context = `${caseId} · ${c.bundleTrustLocal}`;
+    } else {
+      provenance = c.resultSourceBundleUnverified;
+      context = `${caseId} · ${short(contract ?? '')} · ${c.bundleTrustUnverified}`;
+    }
+  } else {
+    findings = currentResultView.findings;
+    origin = currentResultView.origin;
+    caseId = currentResultView.caseId;
+    contract = currentResultView.contract;
+    context = `${caseId} · ${c.contextLocalPreviewSuffix}`;
+    if (origin === 'synthetic_example') {
+      provenance = c.resultSourceExample;
+      context = c.contextExample;
+    } else if (origin === 'chain_snapshot') {
+      provenance = c.resultSourceChainUnassessed;
+      context = `${caseId} · ${c.contextChainUnassessedSuffix}`;
+    } else if (origin === 'chain_result') {
+      provenance = bundleVerifiedOnChain ? c.resultSourceBundleVerified : c.resultSourceChainResult;
+      context = `${caseId} · ${short(contract ?? '')} · ${c.contextChainAssessedSuffix}`;
+    }
   }
 
   $('result-source').textContent = provenance;
   $('result-context').textContent = context;
   $('findings').replaceChildren();
   renderBinding();
+
+  const traceMap = new Map(
+    (currentParsedCase ? buildCriterionTraceability(currentParsedCase, findings) : []).map(t => [t.criterionId, t]),
+  );
 
   for (const f of findings) {
     const card = document.createElement('article');
@@ -354,6 +676,22 @@ function renderResultView() {
       ? `${c.evidencePrefix}${f.evidence_ids.join(' · ')}`
       : c.noEvidenceToCite;
     card.append(caption, title, reason, refs);
+
+    // 证据级结构化溯源明细（使用 div 而非 p，确保既往 .finding p:not(.micro) 选择器语义不变）
+    const trace = traceMap.get(f.criterion_id as 'C1' | 'C2' | 'C3' | 'C4');
+    if (trace) {
+      const traceDiv = document.createElement('div');
+      traceDiv.className = 'finding-trace';
+      traceDiv.textContent = locale === 'zh-CN' ? trace.summaryZh : trace.summaryEn;
+      for (const item of trace.citedItems) {
+        const snippet = document.createElement('code');
+        const previewText = [...item.text].length > 110 ? [...item.text].slice(0, 110).join('') + '…' : item.text;
+        snippet.textContent = `${item.id} (${item.criteria.join(',')}): ${previewText}`;
+        traceDiv.append(snippet);
+      }
+      card.append(traceDiv);
+    }
+
     // 若在英文界面下链上原始返回内容含中文，显式添加英文标注说明其为未翻译的原始链上内容
     if (localizedReason.isRawPreserved && locale === 'en' && containsHan(f.reason)) {
       const rawBadge = document.createElement('small');
@@ -366,11 +704,19 @@ function renderResultView() {
 }
 
 function expireResults(reasonKey: 'expireEvidenceReplaced' | 'expireTargetChanged' | 'expireEvidenceEdited' | 'expireContractEdited') {
-  const hadResult = !!evidenceReview.current || $('findings').childElementCount > 0;
+  const hadResult = !!evidenceReview.current || !!importedBundleState || $('findings').childElementCount > 0;
   evidenceReview.changed();
   evidence = null;
+  currentCanonicalSha256 = null;
+  currentParsedCase = null;
+  currentChainResultRaw = null;
+  importedBundleState = null;
+  liveVerifyState = null;
+  bundleVerifiedOnChain = false;
   binding.hidden = true;
   binding.replaceChildren();
+  liveVerifyBox.hidden = true;
+  liveVerifyBox.replaceChildren();
   if (hadResult) {
     currentResultView = {mode: 'outdated', reasonKey};
   } else {
@@ -391,6 +737,7 @@ function setInput(value: string, preserveReview = false) {
   caseValidated = false;
   $('case-status').textContent = COPY[locale].statusNotValidated;
   updateByteCount();
+  void refreshBaselineDiff();
 }
 
 function show(panel: string) {
@@ -564,6 +911,13 @@ function applyLocale(nextLocale: Locale, persist = false) {
 
   $('results-eyebrow').textContent = c.resultsEyebrow;
   $('results-title').textContent = c.resultsTitle;
+  $('bundle-guide').textContent = c.bundleGuide;
+  if (activeBusyButton !== $('export-bundle')) $('export-bundle').textContent = c.btnExportBundle;
+  $('import-bundle-label').textContent = c.btnImportBundle;
+  if (activeBusyButton !== $('verify-bundle-chain')) $('verify-bundle-chain').textContent = c.btnVerifyBundleChain;
+  if (activeBusyButton !== $('pin-baseline')) $('pin-baseline').textContent = c.btnPinBaseline;
+  if (activeBusyButton !== $('clear-baseline')) $('clear-baseline').textContent = c.btnClearBaseline;
+
   $('footer-left').textContent = c.footerLeft;
   $('footer-right').textContent = c.footerRight;
 
@@ -574,6 +928,7 @@ function applyLocale(nextLocale: Locale, persist = false) {
   renderHeaderAndAccount();
   renderQuoteState();
   renderResultView();
+  renderBaselinePanel();
   renderRecords();
   renderMessageState();
 }
@@ -643,13 +998,17 @@ async function read(contract: `0x${string}`) {
   const sourceSha256 = await compatible(contract);
   const rawSnapshot = await readClient.readContract({address: contract, functionName: 'get_snapshot', args: []});
   if (typeof rawSnapshot !== 'string') throw new Error('No valid evidence snapshot was returned.');
-  const c = parseCase(rawSnapshot);
+  const {parsed: c, canonicalSnapshot} = validateContractCompatibleCase(rawSnapshot);
   const result = await readClient.readContract({address: contract, functionName: 'get_result', args: []});
-  const parsed = result === '' ? null : parseResult(result, c);
+  if (typeof result !== 'string') throw new Error('Invalid on-chain assessment result text.');
+  const validatedResult = result === '' ? null : validateCanonicalAssessmentResult(result, c);
+  const parsed = validatedResult ? parseResult(validatedResult.canonicalResult, c) : null;
+  const snapshotSha256 = await digest(rawSnapshot);
+  const canonicalSha256 = await digest(canonicalSnapshot);
   const proof = {
     origin: parsed ? 'chain_result' as const : 'chain_snapshot' as const,
     caseId: c.case_id,
-    snapshotSha256: await digest(rawSnapshot),
+    snapshotSha256,
     sourceSha256,
     observedAt: new Date().toISOString(),
     chainId: CHAIN.id,
@@ -662,11 +1021,18 @@ async function read(contract: `0x${string}`) {
   caseValidated = true;
   $('case-status').textContent = COPY[locale].statusSchemaValid;
   $<HTMLInputElement>('contract').value = contract;
+  currentCanonicalSha256 = canonicalSha256;
+  currentParsedCase = c;
+  currentChainResultRaw = validatedResult ? validatedResult.canonicalResult : null;
+  importedBundleState = null;
+  liveVerifyState = null;
+  bundleVerifiedOnChain = false;
   evidence = {
     chainId: CHAIN.id,
     contract,
     explorer: contractUrl(contract),
     snapshotSha256: proof.snapshotSha256,
+    canonicalSha256,
     sourceSha256,
     observedAt: proof.observedAt,
     assessment: parsed,
@@ -679,6 +1045,7 @@ async function read(contract: `0x${string}`) {
     contract,
   };
   renderResultView();
+  await refreshBaselineDiff();
   setMessageKey('msgResultsLoaded', false);
 }
 
@@ -713,7 +1080,7 @@ async function prepareQuote(kind: 'deploy' | 'assess') {
   let contract = '';
   if (kind === 'deploy') {
     if (!raw.trim()) throw new Error('The evidence snapshot is empty. Open Prepare Evidence, load the synthetic case, and validate it before preparing a deployment.');
-    parseCase(raw);
+    validateContractCompatibleCase(raw);
     setMessageKey('msgCheckingSchema', false);
     const schema = await readClient.getContractSchemaForCode(code);
     if (!schema.methods?.assess || !schema.methods?.get_result) {
@@ -726,7 +1093,7 @@ async function prepareQuote(kind: 'deploy' | 'assess') {
     const result = await readClient.readContract({address: address(contract), functionName: 'get_result', args: []});
     if (result !== '') throw new Error('This contract already has an assessment. assess cannot run again.');
     if (typeof stored !== 'string') throw new Error('The on-chain evidence snapshot is invalid.');
-    parseCase(stored);
+    validateContractCompatibleCase(stored);
     raw = stored;
     setInput(raw);
   }
@@ -855,7 +1222,7 @@ bind('sample', async () => {
   const r = await fetch(asset('fixtures/case.json'));
   if (!r.ok) throw new Error('Could not load the case.');
   const raw = json(await r.json());
-  parseCase(raw);
+  validateContractCompatibleCase(raw);
   if (!evidenceReview.isCurrent(request)) throw new Error('Example loading was discarded because the draft changed. Your draft was kept.');
   setInput(raw);
   setMessageKey('msgSampleLoaded', false);
@@ -864,15 +1231,24 @@ bind('sample', async () => {
 bind('validate', async () => {
   const request = evidenceReview.begin();
   const raw = snapshot();
-  const c = parseCase(raw);
-  if (!evidenceReview.accept(request, {origin: 'local_preview', caseId: c.case_id, snapshotSha256: await digest(raw), observedAt: new Date().toISOString()})) {
+  const {parsed: c, canonicalSnapshot} = validateContractCompatibleCase(raw);
+  const snapshotSha256 = await digest(raw);
+  const canonicalSha256 = await digest(canonicalSnapshot);
+  if (!evidenceReview.accept(request, {origin: 'local_preview', caseId: c.case_id, snapshotSha256, observedAt: new Date().toISOString()})) {
     throw new Error('The draft changed during validation. Validate it again.');
   }
   evidence = null;
+  currentCanonicalSha256 = canonicalSha256;
+  currentParsedCase = c;
+  currentChainResultRaw = null;
+  importedBundleState = null;
+  liveVerifyState = null;
+  bundleVerifiedOnChain = false;
   caseValidated = true;
   $('case-status').textContent = COPY[locale].statusSchemaValid;
   currentResultView = {mode: 'findings', findings: objectiveFindings(c), origin: 'local_preview', caseId: c.case_id};
   renderResultView();
+  await refreshBaselineDiff();
   setMessageKey('msgValidated', false);
 });
 
@@ -881,21 +1257,180 @@ bind('show-example', async () => {
   const [a, b] = await Promise.all([fetch(asset('fixtures/case.json')), fetch(asset('fixtures/demo-result.json'))]);
   if (!a.ok || !b.ok) throw new Error('Could not load the synthetic example.');
   const raw = await a.text();
-  const c = parseCase(raw);
+  const {parsed: c, canonicalSnapshot} = validateContractCompatibleCase(raw);
   const demo = await b.json();
   const result = parseResult(json(demo.assessment), c);
-  if (!evidenceReview.accept(request, {origin: 'synthetic_example', caseId: c.case_id, snapshotSha256: await digest(raw), observedAt: new Date().toISOString()})) {
+  const snapshotSha256 = await digest(raw);
+  const canonicalSha256 = await digest(canonicalSnapshot);
+  if (!evidenceReview.accept(request, {origin: 'synthetic_example', caseId: c.case_id, snapshotSha256, observedAt: new Date().toISOString()})) {
     throw new Error('Example loading was discarded because the draft changed.');
   }
   evidence = null;
+  currentCanonicalSha256 = canonicalSha256;
+  currentParsedCase = c;
+  currentChainResultRaw = null;
+  importedBundleState = null;
+  liveVerifyState = null;
+  bundleVerifiedOnChain = false;
   currentResultView = {mode: 'findings', findings: result.findings, origin: 'synthetic_example', caseId: c.case_id};
   renderResultView();
   setMessageKey('msgShowingExample', false);
 });
 
 bind('save-input', () => {
-  const c = parseCase(snapshot());
+  const {parsed: c} = validateContractCompatibleCase(snapshot());
   download('sla-evidence.json', json(c));
+});
+
+// 导出自包含可验证评估复核包（agent-sla-assessment-bundle.json）
+bind('export-bundle', async () => {
+  if (currentResultView.mode === 'imported_bundle') {
+    throw new Error('Verify the imported bundle on-chain or re-validate the draft before exporting a new bundle.');
+  }
+  const proof = evidenceReview.current;
+  if (!proof) {
+    throw new Error('Validate the current draft or read an on-chain contract before exporting an assessment bundle.');
+  }
+  const bundle = await buildAssessmentBundle({
+    origin: proof.origin,
+    snapshot: snapshot(),
+    boundSnapshotSha256: proof.snapshotSha256,
+    boundCaseId: proof.caseId,
+    observedAt: proof.observedAt,
+    provenance: proof.contract
+      ? {chainId: proof.chainId, contract: proof.contract, sourceSha256: proof.sourceSha256}
+      : null,
+    resultRaw: currentChainResultRaw,
+  });
+  download('agent-sla-assessment-bundle.json', json(bundle));
+  setMessageKey('msgBundleExported', false);
+});
+
+// 对已导入且声明为链上来源的评估复核包执行 Studionet (61999) 实时交叉核验
+bind('verify-bundle-chain', async () => {
+  if (currentResultView.mode !== 'imported_bundle' || !importedBundleState) {
+    throw new Error('Validate the current draft or read an on-chain contract before exporting an assessment bundle.');
+  }
+  const targetRecord = importedBundleState;
+  const request = evidenceReview.begin();
+  const liveReader = {
+    async getChainId() {
+      const info = await checkNetwork();
+      checkedNetworkInfo = info;
+      return info.chainId;
+    },
+    async getContractCode(contract: `0x${string}`) {
+      return readClient.getContractCode(contract);
+    },
+    async getSnapshot(contract: `0x${string}`) {
+      return readClient.readContract({address: contract, functionName: 'get_snapshot', args: []});
+    },
+    async getResult(contract: `0x${string}`) {
+      return readClient.readContract({address: contract, functionName: 'get_result', args: []});
+    },
+  };
+
+  const outcome = await compareBundleWithLiveChain(
+    targetRecord,
+    liveReader,
+    $<HTMLInputElement>('contract').value,
+  );
+  if (!evidenceReview.isCurrent(request)) {
+    throw new Error('Bundle verification discarded because the draft or contract changed while loading.');
+  }
+  liveVerifyState = outcome;
+
+  if (outcome.status !== 'live_match') {
+    renderResultView();
+    if (outcome.status === 'live_mismatch') {
+      throw new Error(outcome.reasons[0]);
+    }
+    throw new Error(outcome.error);
+  }
+
+  // 实时核验通过：升级为已验证链上状态并写入 evidenceReview
+  const b = targetRecord.bundle;
+  const effectiveOrigin = outcome.upgradedFindings ? ('chain_result' as const) : b.origin;
+  const effectiveFindings = outcome.upgradedFindings ?? targetRecord.findings;
+  const effectiveResultRaw = outcome.upgradedResultRaw ?? b.assessment?.resultRaw ?? null;
+  const proof = {
+    origin: effectiveOrigin,
+    caseId: b.caseId,
+    snapshotSha256: b.snapshotSha256,
+    sourceSha256: outcome.sourceSha256,
+    observedAt: outcome.checkedAt,
+    chainId: outcome.chainId,
+    contract: outcome.contract,
+  };
+  if (!evidenceReview.accept(request, proof)) {
+    throw new Error('Bundle verification discarded because the draft or contract changed while loading.');
+  }
+
+  $<HTMLInputElement>('contract').value = outcome.contract;
+  currentCanonicalSha256 = outcome.canonicalSha256;
+  currentParsedCase = targetRecord.parsedCase;
+  currentChainResultRaw = effectiveResultRaw;
+  importedBundleState = null;
+  bundleVerifiedOnChain = true;
+  evidence = {
+    chainId: outcome.chainId,
+    contract: outcome.contract,
+    explorer: contractUrl(outcome.contract),
+    snapshotSha256: b.snapshotSha256,
+    canonicalSha256: outcome.canonicalSha256,
+    sourceSha256: outcome.sourceSha256,
+    observedAt: outcome.checkedAt,
+    assessment: effectiveResultRaw ? parseResult(effectiveResultRaw, targetRecord.parsedCase) : null,
+  };
+  currentResultView = {
+    mode: 'findings',
+    findings: effectiveFindings,
+    origin: effectiveOrigin,
+    caseId: b.caseId,
+    contract: outcome.contract,
+  };
+  renderResultView();
+  setMessageKey('msgBundleVerifiedLive', false);
+});
+
+// 锁存当前已校验快照为对比基准（绑定证据复核序号与规范化哈希）
+bind('pin-baseline', async () => {
+  const proof = evidenceReview.current;
+  if (proof?.origin === 'synthetic_example') {
+    throw new Error('Validate evidence, read a contract, or verify an imported bundle before pinning a baseline.');
+  }
+  const canPinValidatedView =
+    (currentResultView.mode === 'findings' && !!proof) ||
+    (currentResultView.mode === 'imported_bundle' &&
+      !!importedBundleState &&
+      (!liveVerifyState || liveVerifyState.status !== 'live_mismatch'));
+  if (!currentParsedCase || !currentCanonicalSha256 || !canPinValidatedView) {
+    throw new Error('Validate evidence, read a contract, or verify an imported bundle before pinning a baseline.');
+  }
+  const expectedCanonical = currentCanonicalSha256;
+  const raw = snapshot();
+  const {parsed, canonicalSnapshot} = validateContractCompatibleCase(raw);
+  const canonicalSha = await digest(canonicalSnapshot);
+  if (canonicalSha !== expectedCanonical || currentCanonicalSha256 !== expectedCanonical) {
+    throw new Error('The active draft fingerprint no longer matches the bound review. Validate or read again.');
+  }
+  pinnedBaseline = {
+    rawSnapshot: raw,
+    caseId: parsed.case_id,
+    canonicalSha256: canonicalSha,
+    pinnedAt: new Date().toISOString(),
+  };
+  await refreshBaselineDiff();
+  renderBundleButtons();
+  setMessageKey('msgBaselinePinned', false);
+});
+
+bind('clear-baseline', () => {
+  pinnedBaseline = null;
+  cachedBaselineDiff = {status: 'none'};
+  renderBundleButtons();
+  renderBaselinePanel();
+  setMessageKey('msgBaselineCleared', false);
 });
 
 bind('connect', async () => {
@@ -961,7 +1496,7 @@ bind('track', () => track($<HTMLInputElement>('txid').value.trim()));
 bind('export', () => {
   download('agent-sla-work-record.json', json({
     app: 'agent-sla-workbench',
-    version: '0.1.8',
+    version: '0.1.9',
     locale,
     generatedAt: new Date().toISOString(),
     transactions: records,
@@ -978,6 +1513,7 @@ $('snapshot').addEventListener('input', () => {
   caseValidated = false;
   $('case-status').textContent = COPY[locale].statusNotValidated;
   updateByteCount();
+  void refreshBaselineDiff();
 });
 
 for (const id of ['contract']) {
@@ -992,15 +1528,54 @@ $('consent').addEventListener('change', () => {
 });
 
 $('import').addEventListener('change', () => run(async () => {
-  const request = evidenceReview.begin();
-  const f = $<HTMLInputElement>('import').files?.[0];
+  const inputEl = $<HTMLInputElement>('import');
+  const f = inputEl.files?.[0];
+  inputEl.value = '';
   if (!f) return;
+  const request = evidenceReview.begin();
   if (f.size > 16000) throw new Error('The file exceeds 16,000 bytes.');
   const raw = await f.text();
-  parseCase(raw);
+  validateContractCompatibleCase(raw);
   if (!evidenceReview.isCurrent(request)) throw new Error('Import discarded because the draft changed while the file was loading.');
   setInput(raw);
   setMessageKey('msgImported', false);
+}));
+
+// 导入并零信任核验可移植评估复核包
+$('import-bundle').addEventListener('change', () => run(async () => {
+  const inputEl = $<HTMLInputElement>('import-bundle');
+  const f = inputEl.files?.[0];
+  inputEl.value = '';
+  if (!f) return;
+  const request = evidenceReview.begin();
+  if (f.size > 64000) throw new Error('The assessment bundle file must not exceed 64,000 bytes.');
+  const raw = await f.text();
+  const verified = await verifyAssessmentBundle(raw);
+  if (!evidenceReview.isCurrent(request)) {
+    throw new Error('Bundle import discarded because the draft changed while the file was loading.');
+  }
+
+  // 离线导入绝不直接写入 evidenceReview.accept(chain_*) 冒充实时链上读取
+  setInput(verified.bundle.snapshot, false);
+  caseValidated = true;
+  $('case-status').textContent = COPY[locale].statusSchemaValid;
+  if (verified.bundle.provenance) {
+    $<HTMLInputElement>('contract').value = verified.bundle.provenance.contract;
+  }
+  currentCanonicalSha256 = verified.bundle.canonicalSha256;
+  currentParsedCase = verified.parsedCase;
+  currentChainResultRaw = verified.bundle.assessment?.resultRaw ?? null;
+  importedBundleState = verified;
+  liveVerifyState = null;
+  bundleVerifiedOnChain = false;
+  evidence = null;
+  currentResultView = {mode: 'imported_bundle', record: verified};
+  renderResultView();
+  await refreshBaselineDiff();
+  setMessageKey(
+    verified.trust === 'local_only' ? 'msgBundleImportedLocal' : 'msgBundleImportedUnverified',
+    false,
+  );
 }));
 
 const provider = window.ethereum as Provider & {on?: (event: string, fn: () => void) => void};
